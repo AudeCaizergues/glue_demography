@@ -1,2 +1,0 @@
-- [gis_enviro_data_extraction](./gis_enviro_data_extraction): Scripts used to extract environmental data from Landsat Images
-- [phenotypic_data_processing](./phenotypic_data_processing): Scripts used to clean and standardize datasets with HCN phenotype data by city

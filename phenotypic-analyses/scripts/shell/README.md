@@ -1,1 +1,0 @@
-This directory contains a single script that is called as a subproceess in Python to convert datasets to UTF8 format. 
