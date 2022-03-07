@@ -13,7 +13,7 @@ from snakemake.utils import min_version
 min_version('6.9.1')
 
 # Defailt configfile. Can be changed at command-line (--configfile)
-configfile: '../config/graham.yaml'
+configfile: '../config/hpcnode.yaml'
 
 # Import rules from QC workflow
 # Use specific commit for QC pipeline in case it changes for future projects
@@ -43,7 +43,7 @@ BAM_DIR = '{0}/bam'.format(config['results_prefix'])
 PROGRAM_RESOURCE_DIR = '{0}/program_resources'.format(config['results_prefix'])
 ANGSD_DIR = '{0}/angsd'.format(config['results_prefix'])
 POP_STRUC_DIR = '{0}/population_structure'.format(config['results_prefix'])
-HCN_LOCI_DIR = '{0}/hcn_genotyping'.format(config['results_prefix'])
+DADI_DIR = '{0}/dadi'.format(config['results_prefix'])
 FIGURES_DIR = '{0}/figures'.format(config['results_prefix'])
 
 ## Fixed parameters
@@ -70,7 +70,60 @@ wildcard_constraints:
     site='0fold|4fold'
 
 # Rules to be run locally on as single process
-localrules: create_tmp_dir, index_degenerate_bam, create_samples_to_remove, create_bam_list_finalSamples, convert_sites_for_angsd, angsd_index_allDegenerateSites, select_random_degenerate_sites, angsd_index_random_degen_sites, split_random_angsd_sites_byChrom, index_random_chromosomal_angsd_sites, angsd_index_sites, angsd_allSamples_done, create_bam_list_byCity_byHabitat, select_random_degenerate_sites, angsd_fst_readable, create_random_bam_list_byCity_byHabitat, angsd_permuted_fst_readable, angsd_byCity_byHabitat_done, angsd_byCity_byHabitat_permuted_done, concat_habitat_bamLists_withinCities, remove_lowCovSamples_forPCA_byCity, angsd_byCity_done
+localrules: create_tmp_dir, index_degenerate_bam, create_samples_to_remove, create_bam_list_finalSamples, convert_sites_for_angsd, angsd_index_allDegenerateSites, select_random_degenerate_sites, angsd_index_random_degen_sites, split_random_angsd_sites_byChrom, index_random_chromosomal_angsd_sites, angsd_index_sites, angsd_allSamples_done, create_bam_list_byCity_byHabitat, select_random_degenerate_sites, angsd_fst_readable, create_random_bam_list_byCity_byHabitat, angsd_permuted_fst_readable, angsd_byCity_byHabitat_done, angsd_byCity_byHabitat_permuted_done, concat_habitat_bamLists_withinCities, remove_lowCovSamples_forPCA_byCity, angsd_byCity_done, format_dadi_sfs, dadi_done
+
+include: 'rules/common.smk'
+
+rule all:
+   input:
+        # Reference genome
+        '{0}/ref.done'.format(REF_DIR),
+        # Trimming, mapping, and QC
+        '{0}/multiqc/multiqc_report.html'.format(QC_DIR),
+        #'{0}/species_id.done'.format(SPECIES_ID_DIR), 
+        # Freebayes
+        '{0}/freebayes.done'.format(FREEBAYES_DIR),
+        '{0}/filtering.done'.format(FREEBAYES_DIR),
+        '{0}/phasing.done'.format(FREEBAYES_DIR),
+        # Recombination map
+        '{0}/recombination_map_done'.format(GENMAP_RESULTS_DIR),
+        # Angsd
+        '{0}/angsd_allSamples.done'.format(ANGSD_DIR),
+        '{0}/angsd_byHabitat.done'.format(ANGSD_DIR),
+        '{0}/angsd_byHabitat_allSites.done'.format(ANGSD_DIR),
+        # NGS relate
+        '{0}/ngsrelate.done'.format(NGSRELATE_DIR),
+        # Population structure
+        '{0}/population_structure.done'.format(POP_STRUC_DIR),
+        # Demographic modelling
+        '{0}/dadi.done'.format(DADI_DIR),
+        # HCN loci
+        #'{0}/hnc_loci.done'.format(HCN_LOCI_DIR)
+
+include: 'rules/ref.smk'
+include: 'rules/trimming.smk'
+include: 'rules/mapping.smk'
+include: 'rules/qc.smk'
+include: 'rules/species_id.smk'
+include: 'rules/angsd_allSamples.smk'
+include: 'rules/relatedness.smk'
+include: 'rules/angsd_byHabitat.smk'
+include: 'rules/angsd_byHabitat_allSites.smk'
+include: 'rules/freebayes.smk'
+include: 'rules/filtering.smk'
+include: 'rules/recombination_map.smk'
+include: 'rules/phasing.smk'
+include: 'rules/population_structure.smk'
+include: 'rules/dadi_demographic_models.smk'
+# #include: 'rules/hcn_loci.smk'
+# include: 'rules/notebooks.smk'
+
+rule clean:
+    params:
+        '{0} {1}'.format(config['results_prefix'], LOG_DIR)
+    shell:
+        'rm -rfv {params}'
+
 # Pipeline targets
 # Each step generates an empty flagfile as its final target
 rule all:
@@ -84,6 +137,8 @@ rule all:
         '{0}/angsd_byCity_byHabitat_permuted.done'.format(ANGSD_DIR),
         # Population structure
         '{0}/population_structure.done'.format(POP_STRUC_DIR),
+        # Demographic modelling
+        '{0}/dadi.done'.format(DADI_DIR),
 
 # Create temporary directory used throughout pipeline
 rule create_tmp_dir:
@@ -100,3 +155,4 @@ include: 'rules/angsd_byCity_byHabitat.smk'
 include: 'rules/angsd_byCity_byHabitat_permute.smk'
 include: 'rules/angsd_byCity.smk'
 include: 'rules/population_structure.smk'
+include: 'rules/dadi_demographic_models.smk'
