@@ -6,6 +6,7 @@ gff: ../resources/TrR.v5.renamed_reformated.gtf.gz
 # Path prefixes for results output by this pipeline
 results_prefix: /scratch/projects/trifolium/glue/demography/glue_demography/results
 temp_dir: /scratch/projects/trifolium/glue/demography/glue_demography/tmp
+log_prefix: /scratch/projects/trifolium/glue/demography/glue_demography/results/log
 
 # Path prefixes required by dnaSeqQC pipeline that is imported as Snakemake module
 # Some of these may be the same
