@@ -10,7 +10,7 @@ rule subset_bams_degeneracy:
     Subset BAMs for all samples around 4fold sites to speed up ANGSD computations.
     """
     input:
-        unpack(get_subset_bams_degeneracy_input)
+        unpack(get_all_bams)
     output:
         '{0}/{{site}}/{{sample}}_{{site}}.bam'.format(BAM_DIR)
     log: 'logs/subset_bams_degenerate/{sample}_{site}_subset.log'
@@ -187,7 +187,7 @@ rule angsd_gl_allSamples:
     """
     input:
         bams = rules.create_bam_list_finalSamples.output,
-        ref = rules.glue_dnaSeqQC_unzip_reference.output,
+        ref = rules.unzip_reference.output,
         sites = rules.split_random_angsd_sites_byChrom.output,
         idx = rules.index_random_chromosomal_angsd_sites.output
     output:
