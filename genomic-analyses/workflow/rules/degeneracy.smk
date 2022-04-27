@@ -45,7 +45,7 @@ rule get_fourfold_zerofold:
     """
     input:
         degen = rules.clone_degeneracy.output,
-        ref = rules.glue_dnaSeqQC_unzip_reference.output,
+        ref = rules.unzip_reference.output,
         gff = GFF_FILE
     output:
         expand('{0}/4fold_0fold/Trepens_{{site}}.bed'.format(PROGRAM_RESOURCE_DIR), site=['0fold','4fold'])
