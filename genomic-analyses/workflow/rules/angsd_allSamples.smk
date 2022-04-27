@@ -44,8 +44,7 @@ rule create_samples_to_remove:
     Thresholds were assessed through exploratory analysis of QC data. 
     """
     input:
-        flag = rules.glue_dnaSeqQC_multiqc.output,
-        qc_data = '{0}/multiqc/multiqc_data/multiqc_qualimap_bamqc_genome_results_qualimap_bamqc.txt'.format(QC_DIR)
+        qc_data = ancient(config['qualimap_bamqc'])
     output: 
         error_df = '{0}/highErrorRate_toRemove.txt'.format(PROGRAM_RESOURCE_DIR)
     run:
@@ -63,7 +62,7 @@ rule create_bam_list_finalSamples:
     Create text file with paths to BAMs, excluding samples with high alignment error rates
     """
     input:
-        bams = get_all_bams,
+        bams = ancient(get_all_bams(BAM_DIR)),
         highErr = rules.create_samples_to_remove.output.error_df
     output:
         '{0}/bam_lists/finalSamples_{{site}}_bams.list'.format(PROGRAM_RESOURCE_DIR)
