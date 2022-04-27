@@ -66,7 +66,7 @@ rule angsd_gl_byCity:
         bams = rules.remove_lowCovSamples_forPCA_byCity.output,
         sites = rules.select_random_degenerate_sites.output,
         sites_idx = rules.angsd_index_random_degen_sites.output,
-        ref = rules.glue_dnaSeqQC_unzip_reference.output,
+        ref = rules.unzip_reference.output,
         chroms = config['chromosomes']
     output:
         gls = '{0}/gls/by_city/{{city}}/{{city}}_{{site}}_maf{{maf}}.beagle.gz'.format(ANGSD_DIR),
