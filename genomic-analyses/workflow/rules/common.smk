@@ -37,7 +37,7 @@ def get_files_for_saf_estimation_byCity_byHabitat(wildcards):
     """
     sites_idx = expand(rules.angsd_index_random_degen_sites.output.idx, site=wildcards.site)
     sites = expand(rules.select_random_degenerate_sites.output, site=wildcards.site)
-    ref = rules.glue_dnaSeqQC_unzip_reference.output
+    ref = rules.unzip_reference.output
     bams = expand(rules.create_bam_list_byCity_byHabitat.output, city=wildcards.city, habitat=wildcards.habitat, site = wildcards.site)
     return { 'bams' : bams, 'sites_idx' : sites_idx , 'sites' : sites, 'ref' : ref }
 
@@ -47,7 +47,7 @@ def get_files_for_alleleFreq_estimation_byCity_byHabitat(wildcards):
     """
     sites_idx = expand(rules.angsd_index_city_snps.output.idx, site=wildcards.site, city=wildcards.city)
     sites = expand(rules.snps_forAlleleFreqs_byCity_byHabitat.output, site=wildcards.site, city=wildcards.city)
-    ref = rules.glue_dnaSeqQC_unzip_reference.output
+    ref = rules.unzip_reference.output
     bams = expand(rules.create_bam_list_byCity_byHabitat.output, city=wildcards.city, habitat=wildcards.habitat, site = wildcards.site)
     chroms = config['chromosomes']
     return { 'bams' : bams, 'sites_idx' : sites_idx , 'sites' : sites, 'ref' : ref }
@@ -73,7 +73,7 @@ def get_files_for_permuted_saf_estimation(wildcards):
     """
     sites_idx = expand(rules.angsd_index_random_degen_sites.output.idx, site=wildcards.site)
     sites = expand(rules.select_random_degenerate_sites.output, site=wildcards.site)
-    ref = rules.glue_dnaSeqQC_unzip_reference.output
+    ref = rules.unzip_reference.output
     if wildcards.habitat == 'u':
         bams = expand(rules.create_random_bam_list_byCity_byHabitat.output.urban, city=wildcards.city, seed=wildcards.seed, site=wildcards.site)
     elif wildcards.habitat == 'r':
