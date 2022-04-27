@@ -29,6 +29,7 @@ GFF_FILE = ancient(config['gff'])
 # Paths for output files
 LOG_DIR = config['log_prefix']
 TMPDIR = config['temp_dir']
+REF_DIR = config['ref_dir']
 BAM_DIR = config['bam_path'] 
 PROGRAM_RESOURCE_DIR = '{0}/program_resources'.format(config['results_prefix'])
 ANGSD_DIR = '{0}/angsd'.format(config['results_prefix'])
