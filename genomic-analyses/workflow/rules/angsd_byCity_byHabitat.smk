@@ -51,13 +51,16 @@ rule angsd_saf_likelihood_byCity_byHabitat:
         time = '03:00:00'
     shell:
         """
-        angsd -GL 1 \
+        NUM_IND=$( wc -l > {input.bams} );
+	MIN_IND=$(( NUM_IND*60/100 ));
+	angsd -GL 1 \
             -out {params.out} \
             -nThreads {threads} \
             -doMajorMinor 4 \
             -baq 2 \
             -ref {input.ref} \
             -sites {input.sites} \
+            -minInd $MIN_IND \            
             -minQ 20 \
             -minMapQ 30 \
             -doSaf 1 \
