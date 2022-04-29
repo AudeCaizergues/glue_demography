@@ -37,13 +37,34 @@ POP_STRUC_DIR = '{0}/population_structure'.format(config['results_prefix'])
 DADI_DIR = '{0}/dadi'.format(config['results_prefix'])
 FIGURES_DIR = '{0}/figures'.format(config['results_prefix'])
 
-## Fixed parameters
-
 # Parameters for variant calling with ANGSD
 ANGSD_MAX_DP = config['angsd']['max_dp']
 
 # Parameters for pairwise pi and Fst
 BOOT_SEEDS = ['{0}'.format(x) for x in range(1,101)]
+
+# Dadi models
+DADI_MODELS = [
+    'no_div', 
+    'no_div_bot', 
+    'no_div_growth', 
+    'no_div_bot_growth', 
+    'split_no_mig', 
+    'split_sym_mig', 
+    'split_asym_mig',
+    'split_bot_urb_no_mig', 
+    'split_bot_urb_sym_mig', 
+    'split_bot_urb_asym_mig', 
+    'split_bot_rur_no_mig', 
+    'split_bot_rur_sym_mig', 
+    'split_bot_rur_asym_mig',
+    'split_growth_urb_no_mig',
+    'split_growth_urb_sym_mig',
+    'split_growth_urb_asym_mig',
+    'split_growth_rur_no_mig',
+    'split_growth_rur_sym_mig',
+    'split_growth_rur_asym_mig'
+    ] 
 
 ##################
 #### PIPELINE ####
