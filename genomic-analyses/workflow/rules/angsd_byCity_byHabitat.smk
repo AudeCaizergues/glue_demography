@@ -74,7 +74,8 @@ rule angsd_estimate_joint_sfs_byCity:
     """
     input:
         saf = get_habitat_saf_files_byCity,
-        sites = rules.select_random_degenerate_sites.output
+        sites = rules.convert_sites_for_angsd.output,
+	idx = rules.angsd_index_degenerate_sites.output,
     output:
         '{0}/sfs/by_city/{{city}}/{{city}}_{{site}}_r_u.2dsfs'.format(ANGSD_DIR)
     log: 'logs/angsd_estimate_2dsfs_byCity/{city}_{site}.2dsfs.log'
@@ -99,7 +100,8 @@ rule angsd_estimate_sfs_byCity_byHabitat:
     """
     input:
         saf = rules.angsd_saf_likelihood_byCity_byHabitat.output.saf_idx,
-        sites = rules.select_random_degenerate_sites.output
+        sites = rules.convert_sites_for_angsd.output,
+	idx = rules.angsd_index_degenerate_sites.output,
     output:
         '{0}/sfs/by_city/{{city}}/{{city}}_{{habitat}}_{{site}}.sfs'.format(ANGSD_DIR)
     log: 'logs/angsd_estimate_sfs_byCity_byHabitat/{city}_{habitat}_{site}_sfs.log'
