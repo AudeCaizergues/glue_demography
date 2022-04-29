@@ -118,10 +118,10 @@ def get_bams_for_read_counts(wildcards):
 #    return { 'saf_urban' : saf_urban , 'saf_rural' : saf_rural, 'sfs_urban' : sfs_urban, 'sfs_rural' : sfs_rural, 'ref' : ref }
 
 def get_dadi_sfs_input_files(wildcards):
-    hab1 = wildcards.hab_comb.split('_')[0]
-    hab2 = wildcards.hab_comb.split('_')[1]
+    hab1 = 'urban'
+    hab2 = 'rural'
     saf_files = expand(rules.angsd_saf_likelihood_byCity_byHabitat.output.saf_idx, city=wildcards.city, habitat=HABITATS, site='4fold')  
-    sfs_files = expand(rules.angsd_estimate_sfs__byCity_byHabitat.output, city=wildcards.city, habitat=HABITATS, site='4fold') 
+    sfs_files = expand(rules.angsd_estimate_sfs_byCity_byHabitat.output, city=wildcards.city, habitat=HABITATS, site='4fold') 
     saf_urban = [x for x in saf_files if '{0}'.format(hab1) in os.path.basename(x)]
     saf_rural = [x for x in saf_files if '{0}'.format(hab2) in os.path.basename(x)]
     sfs_urban = [x for x in sfs_files if '{0}'.format(hab1) in os.path.basename(x)]

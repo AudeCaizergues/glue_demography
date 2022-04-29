@@ -4,8 +4,8 @@ rule dadi_sfs:
     input:
         unpack(get_dadi_sfs_input_files)
     output:
-        '{0}/{{hab_comb}}_dadi_fromAngsd.sfs'.format(DADI_DIR),
-    log: LOG_DIR + '/dadi_sfs/{hab_comb}_dadi_sfs.log'
+        '{0}/{{city}}_dadi_fromAngsd.sfs'.format(DADI_DIR),
+    log: LOG_DIR + '/dadi_sfs/{city}_dadi_sfs.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
@@ -26,7 +26,7 @@ rule format_dadi_sfs:
     input:
         rules.dadi_sfs.output
     output:
-        '{0}/{{hab_comb}}_dadi_formatted.sfs'.format(DADI_DIR)
+        '{0}/{{city}}_dadi_formatted.sfs'.format(DADI_DIR)
     params:
         pop1_n = 41,
         pop2_n = 41
@@ -39,9 +39,9 @@ rule run_dadi:
     input:
         sfs = rules.format_dadi_sfs.output
     output:
-        logf = '{0}/{{hab_comb}}_pop0_pop1_{{rep}}.{{model}}.log.txt'.format(DADI_DIR),
-        optimf = '{0}/{{hab_comb}}_pop0_pop1_{{rep}}.{{model}}.optimized.txt'.format(DADI_DIR)
-    log: LOG_DIR + '/run_dadi/{hab_comb}_{model}_{rep}.log'
+        logf = '{0}/{{city}}_pop0_pop1_{{rep}}.{{model}}.log.txt'.format(DADI_DIR),
+        optimf = '{0}/{{city}}_pop0_pop1_{{rep}}.{{model}}.optimized.txt'.format(DADI_DIR)
+    log: LOG_DIR + '/run_dadi/{city}_{model}_{rep}.log'
     conda: '../envs/dadi.yaml'
     params:
         prefix = '{0}/{{model}}/'.format(DADI_DIR)
@@ -53,7 +53,7 @@ rule run_dadi:
 
 rule summarize_dadi_output:
     input:
-        expand(rules.run_dadi.output, hab_comb=['Urban_Rural'], model=['no_div', 'no_div_bot', 'no_div_growth', 'no_div_bot_growth'], rep = ['1', '2', '3', '4', '5'])
+        expand(rules.run_dadi.output, city=CITIES, model=['no_div', 'no_div_bot', 'no_div_growth', 'no_div_bot_growth'], rep = ['1', '2', '3', '4', '5'])
     output:
         short = '{0}/Results_Summary_Short.txt'.format(DADI_DIR),
         exten = '{0}/Results_Summary_Extended.txt'.format(DADI_DIR)
