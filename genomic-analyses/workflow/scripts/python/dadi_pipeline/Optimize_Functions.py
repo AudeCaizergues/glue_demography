@@ -6,7 +6,6 @@ Python modules required:
 -Scipy
 -dadi
 -------------------------
-
 Daniel Portik
 daniel.portik@gmail.com
 https://github.com/dportik
@@ -16,7 +15,10 @@ import sys
 import os
 import numpy
 import dadi
+import functools
 from datetime import datetime
+
+print = functools.partial(print, flush = True)
 
 def parse_params(param_number, in_params=None, in_upper=None, in_lower=None):
     """    
@@ -166,7 +168,7 @@ def write_log(outfile, model_name, rep_results, roundrep):
     """    
     fh_log = open("{0}.{1}.log.txt".format(outfile, model_name), 'a')
     fh_log.write("\n{}\n".format(roundrep))
-    templogname = "{}.log.txt".format(model_name)
+    templogname = "{0}.{1}_tmp.log.txt".format(outfile, model_name)
     try:
         fh_templog = open(templogname, 'r')
         for line in fh_templog:
@@ -184,7 +186,6 @@ def Optimize_Routine(fs, pts, outfile, model_name, func, rounds, param_number, f
                          in_upper=None, in_lower=None, param_labels=None, optimizer="log_fmin"):
     """
     Main function for running dadi routine.
-
     Mandatory/Positional Arguments
     (1) fs:  spectrum object name
     (2) pts: grid size for extrapolation, list of three values
@@ -194,7 +195,6 @@ def Optimize_Routine(fs, pts, outfile, model_name, func, rounds, param_number, f
     (6) rounds: number of optimization rounds to perform
     (7) param_number: number of parameters in the model selected (can count in params line for the model)
     (8) fs_folded: A Boolean value (True or False) indicating whether the empirical fs is folded (True) or not (False). Default is True.
-
     Optional Arguments
     (9) reps: a list of integers controlling the number of replicates in each of three optimization rounds
     (10) maxiters: a list of integers controlling the maxiter argument in each of three optimization rounds
@@ -253,7 +253,7 @@ def Optimize_Routine(fs, pts, outfile, model_name, func, rounds, param_number, f
             tb_rep = datetime.now()
             
             #create an extrapolating function 
-            func_exec = dadi.Numerics.make_extrap_func(func) #modified from make_extrap_log_func() because we had a warning of non convergence
+            func_exec = dadi.Numerics.make_extrap_func(func) 
             
             #perturb starting parameters
             params_perturbed = dadi.Misc.perturb_params(best_params, fold=folds_list[r],
@@ -270,22 +270,22 @@ def Optimize_Routine(fs, pts, outfile, model_name, func, rounds, param_number, f
                 params_opt = dadi.Inference.optimize_log_fmin(params_perturbed, fs, func_exec, pts,
                                                                   lower_bound=lower_bound, upper_bound=upper_bound,
                                                                   verbose=1, maxiter=maxiters_list[r],
-                                                                  output_file = "{}.log.txt".format(model_name))
+                                                                  output_file = "{0}.{1}_tmp.log.txt".format(outfile, model_name))
             elif optimizer == "log":
                 params_opt = dadi.Inference.optimize_log(params_perturbed, fs, func_exec, pts,
                                                                   lower_bound=lower_bound, upper_bound=upper_bound,
                                                                   verbose=1, maxiter=maxiters_list[r],
-                                                                  output_file = "{}.log.txt".format(model_name))
+                                                                  output_file = "{0}.{1}_tmp.log.txt".format(outfile, model_name))
             elif optimizer == "log_lbfgsb":
                 params_opt = dadi.Inference.optimize_log_lbfgsb(params_perturbed, fs, func_exec, pts,
                                                                   lower_bound=lower_bound, upper_bound=upper_bound,
                                                                   verbose=1, maxiter=maxiters_list[r],
-                                                                  output_file = "{}.log.txt".format(model_name))
+                                                                  output_file = "{0}.{1}_tmp.log.txt".format(outfile, model_name))
             elif optimizer == "log_powell":
                 params_opt = dadi.Inference.optimize_log_powell(params_perturbed, fs, func_exec, pts,
                                                                   lower_bound=lower_bound, upper_bound=upper_bound,
                                                                   verbose=1, maxiter=maxiters_list[r],
-                                                                  output_file = "{}.log.txt".format(model_name))
+                                                                  output_file = "{0}.{1}_tmp.log.txt".format(outfile, model_name))
             else:
                  raise ValueError("\n\nERROR: Unrecognized optimizer option: {}\nPlease select from: log, log_lbfgsb, log_fmin, or log_powell.\n\n".format(optimizer))
                  
@@ -337,4 +337,4 @@ def Optimize_Routine(fs, pts, outfile, model_name, func, rounds, param_number, f
               "============================================================================".format(model_name, tfr - tbr))
 
     #cleanup file
-    os.remove("{}.log.txt".format(model_name))
+    os.remove("{0}.{1}_tmp.log.txt".format(outfile, model_name))
