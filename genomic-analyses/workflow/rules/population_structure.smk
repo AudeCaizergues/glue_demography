@@ -64,7 +64,37 @@ rule pcangsd_byCity:
             -iter 5000 \
             > {log}
         """
-                
+
+
+rule ngsadmix:
+    input:
+        rules.concat_angsd_gl.output
+    output:
+        fopt = '{0}/ngsadmix/{{city}}/K{{k}}/ngsadmix_{{city}}_{{site}}_maf{{maf}}_K{{k}}_seed{{seed}}.fopt.gz'.format(POP_STRUC_DIR),
+        qopt = '{0}/ngsadmix/{{city}}/K{{k}}/ngsadmix_{{city}}_{{site}}_maf{{maf}}_K{{k}}_seed{{seed}}.qopt'.format(POP_STRUC_DIR),
+        lf = '{0}/ngsadmix/{{city}}/K{{k}}/ngsadmix_{{city}}_{{site}}_maf{{maf}}_K{{k}}_seed{{seed}}.log'.format(POP_STRUC_DIR)
+    log: LOG_DIR + '/ngsadmix/{city}_{site}_maf{maf}_K{k}_seed{seed}_ngsadmix.log'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933' 
+    threads: 10
+    params:
+        out = '{0}/ngsadmix/{{city}}/K{{k}}/ngsadmix_{{city}}_{{site}}_maf{{maf}}_K{{k}}_seed{{seed}}'.format(POP_STRUC_DIR)
+    wildcard_constraints:
+        site = '4fold'
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 4000,
+        time = '02:00:00'
+    shell:
+        """
+        NGSadmix -likes {input} \
+            -K {wildcards.k} \
+            -seed {wildcards.seed} \
+            -P {threads} \
+            -outfiles {params.out} 2> {log}
+        """
+
+
+
+
 rule pop_structure_done:
     """
     Generate empty flag file signaling successful completion of PCAngsd
