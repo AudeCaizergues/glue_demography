@@ -1,15 +1,21 @@
 # Population structure analyses. 
 
-################
-#### GLOBAL ####
-################
+#######################
+### PCA & ADMIXTURE ###
+#######################
+
+# PCA & admixture analysis using LD-pruned 4fold SNPs from above (MAF > 0.05)
+
+####################
+#### GLOBAL PCA ####
+####################
 
 rule pcangsd_allSamples:
     """
     Perform PCA using genome-wide 4fold dengenerate sites using all samples from all cities.
     """
     input:
-        rules.concat_angsd_gl.output
+        rules.concat_angsd_gl_pruned.output
     output:
         '{0}/pcangsd/allSamples/allSamples_{{site}}_maf{{maf}}_pcangsd.cov'.format(POP_STRUC_DIR),
     log: 'logs/pcangsd_allSamples/allSamples_{site}_maf{maf}_pcangsd.log'
@@ -31,9 +37,10 @@ rule pcangsd_allSamples:
             > {log}
         """
 
-###################
-#### ADMIXTURE ####
-###################
+#####################
+#### PCA BY CITY ####
+#####################
+
 
 rule pcangsd_byCity:
     """
@@ -64,7 +71,9 @@ rule pcangsd_byCity:
             -iter 5000 \
             > {log}
         """
-
+###################
+#### ADMIXTURE ####
+###################
 
 rule ngsadmix:
     input:

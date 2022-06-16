@@ -26,6 +26,7 @@ rule create_bam_list_byCity_byHabitat:
                 if sample in samples_city_habitat:
                     f.write('{0}'.format(bam))
 
+
 ###############################
 #### SFS AND SUMMARY STATS ####
 ###############################
@@ -52,7 +53,7 @@ rule angsd_saf_likelihood_byCity_byHabitat:
     shell:
         """
         NUM_IND=$( wc -l > {input.bams} );
-	MIN_IND=$(( NUM_IND*60/100 ));
+        MIN_IND=$(( NUM_IND*60/100 ));
 	angsd -GL 1 \
             -out {params.out} \
             -nThreads {threads} \
@@ -75,7 +76,7 @@ rule angsd_estimate_joint_sfs_byCity:
     input:
         saf = get_habitat_saf_files_byCity,
         sites = rules.convert_sites_for_angsd.output,
-	idx = rules.angsd_index_allDegenerateSites.output,
+	idx = rules.angsd_index_prunedSNPs.output,
     output:
         '{0}/sfs/by_city/{{city}}/{{city}}_{{site}}_r_u.2dsfs'.format(ANGSD_DIR)
     log: 'logs/angsd_estimate_2dsfs_byCity/{city}_{site}.2dsfs.log'

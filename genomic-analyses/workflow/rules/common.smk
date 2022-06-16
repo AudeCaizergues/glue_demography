@@ -15,6 +15,22 @@ def get_bed(wildcards):
     bed_out = [x for x in bed if wildcards.site in os.path.basename(x)]
     return bed_out
 
+def get_angsd_alldegenerates_gl_toConcat(wildcards):
+    """
+    Returns list with correct genotype likelihood files for concatenation, depending on combination
+    of "sample_set", "site", and "maf" wildcard values
+    """
+    out = expand(rules.angsd_gl_allSamples_alldegenerates.output.gls, chrom=CHROMOSOMES, site=wildcards.site)
+    return out
+
+def get_angsd_alldegenerates_maf_toConcat(wildcards):
+    """
+    Returns list with correct minor allele frequency files for concatenation, depending on combination
+    of "sample_set", "site", and "maf" wildcard values
+    """
+    out = expand(rules.angsd_gl_allSamples_alldegenerates.output.mafs, chrom=CHROMOSOMES, site=wildcards.site)
+    return out
+
 def get_angsd_gl_toConcat(wildcards):
     """
     Returns list with correct genotype likelihood files for concatenation, depending on combination
@@ -35,10 +51,10 @@ def get_files_for_saf_estimation_byCity_byHabitat(wildcards):
     """
     Get files to estimate SAF likelihhods for urban and rural habitats by city.
     """
-    sites_idx = expand(rules.angsd_index_random_degen_sites.output.idx, site=wildcards.site)
-    sites = expand(rules.select_random_degenerate_sites.output, site=wildcards.site)
+    sites_idx = expand(rules.angsd_index_prunedSNPs.output.idx, site=wildcards.site)
+    sites = expand(rules.pruned_degenerate_angsd_format.output, site=wildcards.site)
     ref = rules.unzip_reference.output
-    bams = expand(rules.create_bam_list_byCity_byHabitat.output, city=wildcards.city, habitat=wildcards.habitat, site = wildcards.site)
+    bams = expand(rules.create_bam_list_byCity_byHabitat.output, city=wildcards.city, habitat=wildcards.habitat, site = wildcards.site, sample=FINAL_SAMPLES)
     return { 'bams' : bams, 'sites_idx' : sites_idx , 'sites' : sites, 'ref' : ref }
 
 def get_files_for_alleleFreq_estimation_byCity_byHabitat(wildcards):
@@ -48,7 +64,7 @@ def get_files_for_alleleFreq_estimation_byCity_byHabitat(wildcards):
     sites_idx = expand(rules.angsd_index_city_snps.output.idx, site=wildcards.site, city=wildcards.city)
     sites = expand(rules.snps_forAlleleFreqs_byCity_byHabitat.output, site=wildcards.site, city=wildcards.city)
     ref = rules.unzip_reference.output
-    bams = expand(rules.create_bam_list_byCity_byHabitat.output, city=wildcards.city, habitat=wildcards.habitat, site = wildcards.site)
+    bams = expand(rules.create_bam_list_byCity_byHabitat.output, city=wildcards.city, habitat=wildcards.habitat, site = wildcards.site, sample=FINAL_SAMPLES)
     chroms = config['chromosomes']
     return { 'bams' : bams, 'sites_idx' : sites_idx , 'sites' : sites, 'ref' : ref }
 
@@ -93,6 +109,13 @@ def get_bamLists_toConcat(wildcards):
     """
     all_bam_lists = expand(rules.create_bam_list_byCity_byHabitat.output, city = wildcards.city, habitat = HABITATS, site = wildcards.site)
     return all_bam_lists
+    
+def get_bamLists_toConcat_withoutRelated(wildcards):
+    """
+    Collect text files with paths to urban and rural bams by city
+    """
+    all_bam_lists = expand(rules.create_bam_list_byCity_byHabitat.output, city = wildcards.city, habitat = HABITATS, site = wildcards.site, sample=FINAL_SAMPLES)
+    return all_bam_lists    
 
 def get_bams_for_read_counts(wildcards):
     """

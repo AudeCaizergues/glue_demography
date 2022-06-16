@@ -33,12 +33,23 @@ REF_DIR = config['ref_dir']
 BAM_DIR = config['bam_path'] 
 PROGRAM_RESOURCE_DIR = '{0}/program_resources'.format(config['results_prefix'])
 ANGSD_DIR = '{0}/angsd'.format(config['results_prefix'])
+NGSLD_DIR = '{0}/ngsld'.format(config['results_prefix'])
 POP_STRUC_DIR = '{0}/population_structure'.format(config['results_prefix'])
 DADI_DIR = '{0}/dadi'.format(config['results_prefix'])
 FIGURES_DIR = '{0}/figures'.format(config['results_prefix'])
 
 # Parameters for variant calling with ANGSD
 ANGSD_MAX_DP = config['angsd']['max_dp']
+ANGSD_MIN_DP_IND_SFS = config['angsd']['min_dp_ind_sfs']
+ANGSD_MIN_DP_IND_GL = config['angsd']['min_dp_ind_gl']
+
+### NOT DECIDED IF WE ARE GOING TO FILTER FOR QUALITY YET
+## Parameters for initial PCA and relatedness analysis post-QC
+#LOWQUAL_SAMPLES_TO_EXCLUDE = config['lowQual_samples_to_exclude']
+
+# List with all samples to exclude based on analysis of within-population relatedness
+RELATED_SAMPLES_TO_EXCLUDE = config['related_samples_to_exclude']
+FINAL_SAMPLES = [x for x in SAMPLES if x not in RELATED_SAMPLES_TO_EXCLUDE]
 
 # Parameters for Admixture analysis 
 NGSADMIX_K = [x for x in range(2, 11)]
@@ -98,12 +109,14 @@ rule all:
         # Degeneracy
         '{0}/degeneracy.done'.format(PROGRAM_RESOURCE_DIR),
         # Angsd
-        '{0}/angsd_allSamples.done'.format(ANGSD_DIR),
+        #'{0}/angsd_allSamples.done'.format(ANGSD_DIR), # removing this part that works on a subset of the 4fold sites
+        '{0}/angsd_allSamples_alldegenerates.done'.format(ANGSD_DIR),
         '{0}/angsd_byCity.done'.format(ANGSD_DIR),
-        '{0}/angsd_byCity_byHabitat.done'.format(ANGSD_DIR),
-        '{0}/angsd_byCity_byHabitat_permuted.done'.format(ANGSD_DIR),
+        #'{0}/angsd_byCity_byHabitat.done'.format(ANGSD_DIR),
+        #'{0}/angsd_byCity_byHabitat_permuted.done'.format(ANGSD_DIR),
         # Population structure
-        '{0}/population_structure.done'.format(POP_STRUC_DIR),
+        '{0}/LD_Relatedness.done'.format(POP_STRUC_DIR),
+        #'{0}/population_structure.done'.format(POP_STRUC_DIR),
         # Demographic modelling
         #'{0}/dadi.done'.format(DADI_DIR),
 
@@ -117,9 +130,11 @@ rule create_tmp_dir:
 # See Snakefiles for details
 include: 'rules/common.smk'
 include: 'rules/degeneracy.smk'
-include: 'rules/angsd_allSamples.smk'
-include: 'rules/angsd_byCity_byHabitat.smk'
-include: 'rules/angsd_byCity_byHabitat_permute.smk'
+#include: 'rules/angsd_allSamples.smk'
+include: 'rules/angsd_allSamples_allDegenerates.smk'
+#include: 'rules/angsd_byCity_byHabitat.smk'
+#include: 'rules/angsd_byCity_byHabitat_permute.smk'
 include: 'rules/angsd_byCity.smk'
+include: 'rules/LD_Relatedness.smk'
 include: 'rules/population_structure.smk'
 include: 'rules/dadi_demographic_models.smk'

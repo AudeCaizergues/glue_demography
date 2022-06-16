@@ -5,6 +5,30 @@
 #### SETUP ####
 ###############
 
+# REMOVE IT WHEN RUNNIN angsd_byCity_byHabitat to avoid doublons
+rule create_bam_list_byCity_byHabitat:
+    """
+    Create text file with paths to BAM files in each habitat by city. 
+    """
+    input:
+        rules.create_bam_list_finalSamples.output
+    output:
+        '{0}/bam_lists/by_city/{{city}}/{{city}}_{{habitat}}_{{site}}_bams.list'.format(PROGRAM_RESOURCE_DIR)
+    run:
+        import os
+        import pandas as pd
+        df = pd.read_table(config['samples'], sep = '\t')
+        df_sub = df[(df['city'] == wildcards.city) & (df['site'] == wildcards.habitat)]
+        samples_city_habitat = df_sub['sample'].tolist()
+        bams = open(input[0], 'r').readlines()
+        with open(output[0], 'w') as f:
+            for bam in bams:
+                search = re.search('^(.+)(?=_\w)', os.path.basename(bam))
+                sample = search.group(1)
+                if sample in samples_city_habitat:
+                    f.write('{0}'.format(bam))
+#
+
 rule concat_habitat_bamLists_withinCities:
     """
     Concatenate urban and rural sample BAM lists within cities. Generates a single file with
@@ -64,8 +88,8 @@ rule angsd_gl_byCity:
     """
     input:
         bams = rules.remove_lowCovSamples_forPCA_byCity.output,
-        sites = rules.select_random_degenerate_sites.output,
-        sites_idx = rules.angsd_index_random_degen_sites.output,
+        sites = rules.convert_sites_for_angsd.output,
+        sites_idx = rules.angsd_index_degenerate_sites.output, 
         ref = rules.unzip_reference.output,
         chroms = config['chromosomes']
     output:
