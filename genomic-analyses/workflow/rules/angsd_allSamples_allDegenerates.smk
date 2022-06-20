@@ -14,7 +14,7 @@ rule subset_bams_degeneracy:
 		unpack(get_all_bams)
 	output:
 		'{0}/{{site}}/{{sample}}_{{site}}.bam'.format(BAM_DIR)
-	log: 'logs/subset_bams_degenerate/{sample}_{site}_subset.log'
+	log: LOG_DIR + '/subset_bams_degenerate/{sample}_{site}_subset.log'
 	conda: '../envs/degeneracy.yaml'
 	resources:
 		mem_mb = lambda wildcards, attempt: attempt * 2000,
@@ -53,7 +53,7 @@ rule create_bam_list_finalSamples:
 		highErr = rules.create_samples_to_remove.output.error_df
 	output:
 		'{0}/bam_lists/finalSamples_{{site}}_bams.list'.format(PROGRAM_RESOURCE_DIR)
-	log: 'logs/create_bam_list/finalSamples_{site}_bam_list.log'
+	log: LOG_DIR + '/create_bam_list/finalSamples_{site}_bam_list.log'
 	run:
 		import os
 		import re
@@ -78,7 +78,7 @@ rule convert_sites_for_angsd:
 		get_bed
 	output:
 		'{0}/angsd_sites/Trepens_{{site}}.sites'.format(PROGRAM_RESOURCE_DIR) 
-	log: 'logs/convert_sites_for_angsd/convert_{site}_for_angsd.log'
+	log: LOG_DIR + '/convert_sites_for_angsd/convert_{site}_for_angsd.log'
 	shell:
 		"""
 		awk '{{print $1"\t"$2+1}}' {input} > {output} 2> {log}
@@ -137,7 +137,7 @@ rule angsd_gl_allSamples_alldegenerates:
 	output:
 		gls = temp('{0}/gls/allSamples_alldegenerates/{{site}}/{{chrom}}/{{chrom}}_{{site}}.beagle.gz'.format(ANGSD_DIR)),
 		mafs = temp('{0}/gls/allSamples_alldegenerates/{{site}}/{{chrom}}/{{chrom}}_{{site}}.mafs.gz'.format(ANGSD_DIR)),
-	log: 'logs/angsd_gl_allSamples_alldegenerates/{chrom}_{site}_angsd_gl.log'
+	log: LOG_DIR + '/angsd_gl_allSamples_alldegenerates/{chrom}_{site}_angsd_gl.log'
 	container: 'library://james-s-santangelo/angsd/angsd:0.933' 
 	params:
 		out = '{0}/gls/allSamples_alldegenerates/{{site}}/{{chrom}}/{{chrom}}_{{site}}'.format(ANGSD_DIR),
@@ -177,7 +177,7 @@ rule concat_angsd_alldegenerates_gl:
 		get_angsd_alldegenerates_gl_toConcat
 	output:
 		'{0}/gls/allSamples/{{site}}/allChroms_{{site}}.beagle.gz'.format(ANGSD_DIR)
-	log: 'logs/concat_angsd_alldegenerates_gl/allSamples_{site}_concat.log'
+	log: LOG_DIR + '/concat_angsd_alldegenerates_gl/allSamples_{site}_concat.log'
 	container: 'library://james-s-santangelo/angsd/angsd:0.933' 
 	shell:
 		"""
@@ -200,7 +200,7 @@ rule concat_angsd_alldegenerates_mafs:
 		get_angsd_alldegenerates_maf_toConcat
 	output:
 		'{0}/gls/allSamples/{{site}}/allChroms_{{site}}.mafs.gz'.format(ANGSD_DIR)
-	log: 'logs/concat_angsd_alldegenerates_mafs/allSamples_{site}_concat.log'
+	log: LOG_DIR + '/concat_angsd_alldegenerates_mafs/allSamples_{site}_concat.log'
 	container: 'library://james-s-santangelo/angsd/angsd:0.933' 
 	shell:
 		"""
