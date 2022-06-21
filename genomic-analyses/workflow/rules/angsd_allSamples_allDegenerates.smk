@@ -135,8 +135,8 @@ rule angsd_gl_allSamples_alldegenerates:
 		sites = rules.split_angsd_sites_byChrom.output,
 		idx = rules.angsd_index_sites_byChrom.output
 	output:
-		gls = temp('{0}/gls/allSamples_alldegenerates/{{site}}/{{chrom}}/{{chrom}}_{{site}}.beagle.gz'.format(ANGSD_DIR)),
-		mafs = temp('{0}/gls/allSamples_alldegenerates/{{site}}/{{chrom}}/{{chrom}}_{{site}}.mafs.gz'.format(ANGSD_DIR)),
+		gls = '{0}/gls/allSamples_alldegenerates/{{site}}/{{chrom}}/{{chrom}}_{{site}}.beagle.gz'.format(ANGSD_DIR),
+		mafs = '{0}/gls/allSamples_alldegenerates/{{site}}/{{chrom}}/{{chrom}}_{{site}}.mafs.gz'.format(ANGSD_DIR),
 	log: LOG_DIR + '/angsd_gl_allSamples_alldegenerates/{chrom}_{site}_angsd_gl.log'
 	container: 'library://james-s-santangelo/angsd/angsd:0.933' 
 	params:
