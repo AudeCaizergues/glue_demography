@@ -17,12 +17,12 @@ rule pcangsd_allSamples:
     input:
         rules.concat_angsd_gl_pruned.output
     output:
-        '{0}/pcangsd/allSamples/allSamples_{{site}}_maf{{maf}}_pcangsd.cov'.format(POP_STRUC_DIR),
-    log: 'logs/pcangsd_allSamples/allSamples_{site}_maf{maf}_pcangsd.log'
+        '{0}/pcangsd/allSamples/pcangsd_withoutRelated/allSamples_{{site}}_maf{{maf}}_pcangsd.cov'.format(POP_STRUC_DIR),
+    log: LOG_DIR + '/pcangsd_allSamples/pcangsd_withoutRelated/allSamples_{site}_maf{maf}_pcangsd.log'
     container: 'library://james-s-santangelo/pcangsd/pcangsd:0.99'
     threads: 10
     params:
-        out = '{0}/pcangsd/allSamples/allSamples_{{site}}_maf{{maf}}_pcangsd'.format(POP_STRUC_DIR)
+        out = '{0}/pcangsd/allSamples/pcangsd_withoutRelated/allSamples_{{site}}_maf{{maf}}_pcangsd'.format(POP_STRUC_DIR)
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 12000,
         time = '03:00:00'
@@ -49,13 +49,13 @@ rule pcangsd_byCity:
     input:
         rules.angsd_gl_byCity.output.gls
     output:
-        cov = '{0}/pcangsd/by_city/{{city}}/{{city}}_{{site}}_maf{{maf}}_pcangsd.cov'.format(POP_STRUC_DIR),
-        Q = '{0}/pcangsd/by_city/{{city}}/{{city}}_{{site}}_maf{{maf}}_pcangsd.admix.Q.npy'.format(POP_STRUC_DIR)
-    log: 'logs/pcangsd_byCity/{city}_{site}_maf{maf}_pcangsd.log'
+        cov = '{0}/pcangsd/by_city/pcangsd_withoutRelated/{{city}}/{{city}}_{{site}}_maf{{maf}}_pcangsd.cov'.format(POP_STRUC_DIR),
+        Q = '{0}/pcangsd/by_city/pcangsd_withoutRelated/{{city}}/{{city}}_{{site}}_maf{{maf}}_pcangsd.admix.Q.npy'.format(POP_STRUC_DIR)
+    log: LOG_DIR + '/pcangsd_byCity/pcangsd_withoutRelated/{city}_{site}_maf{maf}_pcangsd.log'
     container: 'library://james-s-santangelo/pcangsd/pcangsd:0.99'
     threads: 6
     params:
-        out = '{0}/pcangsd/by_city/{{city}}/{{city}}_{{site}}_maf{{maf}}_pcangsd'.format(POP_STRUC_DIR)
+        out = '{0}/pcangsd/by_city/pcangsd_withoutRelated/{{city}}/{{city}}_{{site}}_maf{{maf}}_pcangsd'.format(POP_STRUC_DIR)
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 8000,
         time = '02:00:00'

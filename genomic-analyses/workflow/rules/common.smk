@@ -7,6 +7,13 @@ def get_all_bams(BAM_DIR):
     bams = expand(BAM_DIR + '/{sample}_{site}.bam', sample=SAMPLES, site='4fold')
     return bams
 
+def get_all_bams_withoutRelated(BAM_DIR):
+    """
+    Returns list with paths to GLUE bams 
+    """
+    bams = expand(BAM_DIR + '/{sample}_{site}.bam', sample=FINAL_SAMPLES, site='4fold')
+    return bams
+
 def get_bed(wildcards):
     """
     Get correct BED file for conversion to ANGSD sites format
@@ -30,6 +37,22 @@ def get_angsd_alldegenerates_maf_toConcat(wildcards):
     """
     out = expand(rules.angsd_gl_allSamples_alldegenerates.output.mafs, chrom=CHROMOSOMES, site=wildcards.site)
     return out
+    
+def get_angsd_alldegenerates_gl_toConcat_withoutRelated(wildcards):
+    """
+    Returns list with correct genotype likelihood files for concatenation, depending on combination
+    of "sample_set", "site", and "maf" wildcard values
+    """
+    out = expand(rules.angsd_gl_allSamples_alldegenerates_withoutRelated.output.gls, chrom=CHROMOSOMES, site=wildcards.site)
+    return out
+
+def get_angsd_alldegenerates_maf_toConcat_withoutRelated(wildcards):
+    """
+    Returns list with correct minor allele frequency files for concatenation, depending on combination
+    of "sample_set", "site", and "maf" wildcard values
+    """
+    out = expand(rules.angsd_gl_allSamples_alldegenerates_withoutRelated.output.mafs, chrom=CHROMOSOMES, site=wildcards.site)
+    return out
 
 def get_angsd_gl_toConcat(wildcards):
     """
@@ -39,12 +62,20 @@ def get_angsd_gl_toConcat(wildcards):
     out = expand(rules.angsd_gl_allSamples.output.gls, chrom=CHROMOSOMES, site=wildcards.site)
     return out
 
-def get_angsd_maf_toConcat(wildcards):
+def get_pruned_angsd_files_toConcat(wildcards):
+    """
+    Returns list with correct ANGSD sites-formatted file with position of LD-pruned 4fold sites for concatenation, 
+    depending on combination of "chrom", "site", and "maf" wildcard values
+    """
+    out = expand(rules.pruned_degenerate_angsd_format.output, chrom=CHROMOSOMES, site=wildcards.site, maf=wildcards.maf)
+    return out
+
+def get_angsd_alldegenerates_maf_toConcat(wildcards):
     """
     Returns list with correct minor allele frequency files for concatenation, depending on combination
     of "sample_set", "site", and "maf" wildcard values
     """
-    out = expand(rules.angsd_gl_allSamples.output.mafs, chrom=CHROMOSOMES, site=wildcards.site)
+    out = expand(rules.angsd_gl_allSamples_alldegenerates.output.mafs, chrom=CHROMOSOMES, site=wildcards.site)
     return out
 
 def get_files_for_saf_estimation_byCity_byHabitat(wildcards):
@@ -114,7 +145,7 @@ def get_bamLists_toConcat_withoutRelated(wildcards):
     """
     Collect text files with paths to urban and rural bams by city
     """
-    all_bam_lists = expand(rules.create_bam_list_byCity_byHabitat.output, city = wildcards.city, habitat = HABITATS, site = wildcards.site, sample=FINAL_SAMPLES)
+    all_bam_lists = expand(rules.create_bam_list_byCity_byHabitat_withoutRelated.output, city = wildcards.city, habitat = HABITATS, site = wildcards.site)
     return all_bam_lists    
 
 def get_bams_for_read_counts(wildcards):
