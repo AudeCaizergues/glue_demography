@@ -11,9 +11,10 @@ rule create_bam_list_byCity_byHabitat_withoutRelated:
     Create text file with paths to BAM files in each habitat by city. 
     """
     input:
-        rules.create_bam_list_finalSamples_noRelated.output
+        rules.create_bam_list_finalSamples_withoutRelated.output
     output:
         '{0}/bam_lists/by_city/withoutRelated/{{city}}/{{city}}_{{habitat}}_{{site}}_bams.list'.format(PROGRAM_RESOURCE_DIR)
+    log: LOG_DIR + '/create_bam_list_byCity_byHabitat_withoutRelated/withoutRelated/{city}_{habitat}_{site}_concat.log' 
     run:
         import os
         import pandas as pd
@@ -82,7 +83,7 @@ rule remove_lowCovSamples_forPCA_byCity_withoutRelated:
 #### GENOTYPE LIKELIHOODS ####
 ##############################
 
-rule angsd_gl_byCity_without:
+rule angsd_gl_byCity_withoutRelated:
     """
     Estimate Beagle genotype likelihoods jointly for all samples within city.
     """

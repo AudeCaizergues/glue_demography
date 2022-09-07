@@ -1,32 +1,5 @@
 # Rules for estimating SFS (1D and 2D), summary stats, and GLs for urban and rural habitats within cities
 
-###############
-#### SETUP ####
-###############
-
-rule create_bam_list_byCity_byHabitat:
-    """
-    Create text file with paths to BAM files in each habitat by city. 
-    """
-    input:
-        rules.create_bam_list_finalSamples.output
-    output:
-        '{0}/bam_lists/by_city/{{city}}/{{city}}_{{habitat}}_{{site}}_bams.list'.format(PROGRAM_RESOURCE_DIR)
-    run:
-        import os
-        import pandas as pd
-        df = pd.read_table(config['samples'], sep = '\t')
-        df_sub = df[(df['city'] == wildcards.city) & (df['site'] == wildcards.habitat)]
-        samples_city_habitat = df_sub['sample'].tolist()
-        bams = open(input[0], 'r').readlines()
-        with open(output[0], 'w') as f:
-            for bam in bams:
-                search = re.search('^(.+)(?=_\w)', os.path.basename(bam))
-                sample = search.group(1)
-                if sample in samples_city_habitat:
-                    f.write('{0}'.format(bam))
-
-
 ###############################
 #### SFS AND SUMMARY STATS ####
 ###############################
@@ -39,10 +12,10 @@ rule angsd_saf_likelihood_byCity_byHabitat:
     input:
         unpack(get_files_for_saf_estimation_byCity_byHabitat)
     output:
-        saf = temp('{0}/sfs/by_city/{{city}}/{{city}}_{{habitat}}_{{site}}.saf.gz'.format(ANGSD_DIR)),
-        saf_idx = temp('{0}/sfs/by_city/{{city}}/{{city}}_{{habitat}}_{{site}}.saf.idx'.format(ANGSD_DIR)),
-        saf_pos = temp('{0}/sfs/by_city/{{city}}/{{city}}_{{habitat}}_{{site}}.saf.pos.gz'.format(ANGSD_DIR))
-    log: 'logs/angsd_saf_likelihood_byCity_byHabitat/{city}_{habitat}_{site}_saf.log'
+        saf = '{0}/sfs/by_city/{{city}}/{{city}}_{{habitat}}_{{site}}.saf.gz'.format(ANGSD_DIR),
+        saf_idx = '{0}/sfs/by_city/{{city}}/{{city}}_{{habitat}}_{{site}}.saf.idx'.format(ANGSD_DIR),
+        saf_pos = '{0}/sfs/by_city/{{city}}/{{city}}_{{habitat}}_{{site}}.saf.pos.gz'.format(ANGSD_DIR)
+    log: LOG_DIR + '/angsd_saf_likelihood_byCity_byHabitat/{city}_{habitat}_{site}_saf.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     params:
         out = '{0}/sfs/by_city/{{city}}/{{city}}_{{habitat}}_{{site}}'.format(ANGSD_DIR)
@@ -52,18 +25,18 @@ rule angsd_saf_likelihood_byCity_byHabitat:
         time = '03:00:00'
     shell:
         """
-        NUM_IND=$( wc -l > {input.bams} );
+        NUM_IND=$( wc -l < {input.bams} );
         MIN_IND=$(( NUM_IND*60/100 ));
-	angsd -GL 1 \
+        angsd -GL 1 \
             -out {params.out} \
             -nThreads {threads} \
             -doMajorMinor 4 \
             -baq 2 \
             -ref {input.ref} \
             -sites {input.sites} \
-            -minInd $MIN_IND \            
-            -minQ 20 \
+            -minInd $MIN_IND \
             -minMapQ 30 \
+            -minQ 20 \
             -doSaf 1 \
             -anc {input.ref} \
             -bam {input.bams} 2> {log}
@@ -76,10 +49,10 @@ rule angsd_estimate_joint_sfs_byCity:
     input:
         saf = get_habitat_saf_files_byCity,
         sites = rules.convert_sites_for_angsd.output,
-        idx = rules.angsd_index_prunedSNPs.output,
+        idx = rules.angsd_index_degenerate_sites.output,
     output:
         '{0}/sfs/by_city/{{city}}/{{city}}_{{site}}_r_u.2dsfs'.format(ANGSD_DIR)
-    log: 'logs/angsd_estimate_2dsfs_byCity/{city}_{site}.2dsfs.log'
+    log: LOG_DIR + '/angsd_estimate_2dsfs_byCity/{city}_{site}.2dsfs.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     threads: 10
     resources:
@@ -102,10 +75,10 @@ rule angsd_estimate_sfs_byCity_byHabitat:
     input:
         saf = rules.angsd_saf_likelihood_byCity_byHabitat.output.saf_idx,
         sites = rules.convert_sites_for_angsd.output,
-        idx = rules.angsd_index_allDegenerateSites.output,
+        idx = rules.angsd_index_degenerate_sites.output,
     output:
         '{0}/sfs/by_city/{{city}}/{{city}}_{{habitat}}_{{site}}.sfs'.format(ANGSD_DIR)
-    log: 'logs/angsd_estimate_sfs_byCity_byHabitat/{city}_{habitat}_{site}_sfs.log'
+    log: LOG_DIR + '/angsd_estimate_sfs_byCity_byHabitat/{city}_{habitat}_{site}_sfs.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     threads: 10
     resources:
@@ -132,11 +105,11 @@ rule angsd_fst_index:
     input: 
         saf_idx = get_habitat_saf_files_byCity,
         joint_sfs = rules.angsd_estimate_joint_sfs_byCity.output,
-        sites = rules.select_random_degenerate_sites.output
+        sites = rules.convert_sites_for_angsd.output
     output:
         fst = '{0}/summary_stats/hudson_fst/{{city}}/{{city}}_{{site}}_r_u.fst.gz'.format(ANGSD_DIR),
         idx = '{0}/summary_stats/hudson_fst/{{city}}/{{city}}_{{site}}_r_u.fst.idx'.format(ANGSD_DIR)
-    log: 'logs/angsd_fst_index/{city}_{site}_index.log'
+    log: LOG_DIR + '/angsd_fst_index/{city}_{site}_index.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     threads: 4
     resources:
@@ -163,7 +136,7 @@ rule angsd_fst_readable:
         rules.angsd_fst_index.output.idx
     output:
         '{0}/summary_stats/hudson_fst/{{city}}/{{city}}_{{site}}_r_u_readable.fst'.format(ANGSD_DIR)
-    log: 'logs/angsd_fst_readable/{city}_{site}_readable_fst.log'
+    log: LOG_DIR + '/angsd_fst_readable/{city}_{site}_readable_fst.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     shell:
         """
@@ -177,11 +150,11 @@ rule angsd_estimate_thetas_byCity_byHabitat:
     input:
         saf_idx = rules.angsd_saf_likelihood_byCity_byHabitat.output.saf_idx,
         sfs = rules.angsd_estimate_sfs_byCity_byHabitat.output,
-        sites = rules.select_random_degenerate_sites.output
+        sites = rules.convert_sites_for_angsd.output
     output:
         idx = '{0}/summary_stats/thetas/by_city/{{city}}/{{city}}_{{habitat}}_{{site}}.thetas.idx'.format(ANGSD_DIR),
         thet = '{0}/summary_stats/thetas/by_city/{{city}}/{{city}}_{{habitat}}_{{site}}.thetas.gz'.format(ANGSD_DIR)
-    log: 'logs/angsd_estimate_thetas_byCity_byHabitat/{city}_{habitat}_{site}_thetas.log'
+    log: LOG_DIR + '/angsd_estimate_thetas_byCity_byHabitat/{city}_{habitat}_{site}_thetas.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     threads: 4
     params:
@@ -207,7 +180,7 @@ rule angsd_diversity_neutrality_stats_byCity_byHabitat:
         rules.angsd_estimate_thetas_byCity_byHabitat.output.idx
     output:
        '{0}/summary_stats/thetas/by_city/{{city}}/{{city}}_{{habitat}}_{{site}}.thetas.idx.pestPG'.format(ANGSD_DIR)
-    log: 'logs/angsd_diversity_neutrality_stats_byCity_byHabitat/{city}_{habitat}_{site}_diversity_neutrality.log'
+    log: LOG_DIR + '/angsd_diversity_neutrality_stats_byCity_byHabitat/{city}_{habitat}_{site}_diversity_neutrality.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
@@ -227,6 +200,9 @@ rule angsd_byCity_byHabitat_done:
     for habitats within cities
     """
     input:
+        expand(rules.angsd_saf_likelihood_byCity_byHabitat.output, city=CITIES, habitat=HABITATS, site=['4fold']),
+        expand(rules.angsd_estimate_joint_sfs_byCity.output, city=CITIES, site=['4fold']),
+        expand(rules.angsd_estimate_sfs_byCity_byHabitat.output, city=CITIES, habitat=HABITATS, site=['4fold']),
         expand(rules.angsd_fst_readable.output, city=CITIES, site=['4fold']),
         expand(rules.angsd_diversity_neutrality_stats_byCity_byHabitat.output, city=CITIES, habitat=HABITATS, site=['4fold'])
     output:

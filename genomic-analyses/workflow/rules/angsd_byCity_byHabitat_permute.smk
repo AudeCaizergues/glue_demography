@@ -5,32 +5,6 @@
 #### SETUP ####
 ###############
 
-rule create_random_bam_list_byCity_byHabitat:
-    """
-    Create text files with paths to BAM files for each city. 'urban' and 'rural' samples are randomly
-    selected from all possible bams for a city. Sample sizes are the same as those in the observed samples.
-    """
-    input:
-        unpack(get_urban_rural_bam_lists)
-    output:
-        urban = '{0}/bam_lists/by_city/{{city}}/randomized/{{city}}_randU_seed{{seed}}_{{site}}_bams.list'.format(PROGRAM_RESOURCE_DIR),
-        rural = '{0}/bam_lists/by_city/{{city}}/randomized/{{city}}_randR_seed{{seed}}_{{site}}_bams.list'.format(PROGRAM_RESOURCE_DIR)
-    run:
-        import random
-        urban_bams = list(open(input.urban_bams, 'r'))
-        rural_bams = list(open(input.rural_bams, 'r'))
-        urban_n = len(urban_bams)
-        rural_n = len(rural_bams)
-        all_bams = urban_bams + rural_bams
-        random.seed(int(wildcards.seed))
-        randU = random.sample(all_bams, urban_n)
-        randR = [bam for bam in all_bams if not bam in randU] 
-        with open(output.urban, 'w') as uout:
-            for bam in randU:
-                uout.write(bam)
-        with open(output.rural, 'w') as rout:
-            for bam in randR:
-                rout.write(bam)
 
 ##############################
 #### PERMUTED SAF AND SFS ####
@@ -44,10 +18,11 @@ rule angsd_permuted_saf_likelihood_byCity_byHabitat:
     input:
         unpack(get_files_for_permuted_saf_estimation)
     output:
-        saf = temp('{0}/sfs/by_city/{{city}}/randomized/{{city}}_{{habitat}}_{{site}}_seed{{seed}}.saf.gz'.format(ANGSD_DIR)),
-        saf_idx = temp('{0}/sfs/by_city/{{city}}/randomized/{{city}}_{{habitat}}_{{site}}_seed{{seed}}.saf.idx'.format(ANGSD_DIR)),
-        saf_pos = temp('{0}/sfs/by_city/{{city}}/randomized/{{city}}_{{habitat}}_{{site}}_seed{{seed}}.saf.pos.gz'.format(ANGSD_DIR))
-    log: 'logs/angsd_permuted_saf_likelihood_byCity_byHabitat/{city}_{habitat}_{site}_seed{seed}_saf.log'
+        saf = '{0}/sfs/by_city/{{city}}/randomized/{{city}}_{{habitat}}_{{site}}_seed{{seed}}.saf.gz'.format(ANGSD_DIR),
+        saf_idx = '{0}/sfs/by_city/{{city}}/randomized/{{city}}_{{habitat}}_{{site}}_seed{{seed}}.saf.idx'.format(ANGSD_DIR),
+        saf_pos = '{0}/sfs/by_city/{{city}}/randomized/{{city}}_{{habitat}}_{{site}}_seed{{seed}}.saf.pos.gz'.format(ANGSD_DIR)
+    log: LOG_DIR + '/angsd_permuted_saf_likelihood_byCity_byHabitat/{city}_{habitat}_{site}_seed{seed}_saf.log'
+    priority: 10
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     params:
         out = '{0}/sfs/by_city/{{city}}/randomized/{{city}}_{{habitat}}_{{site}}_seed{{seed}}'.format(ANGSD_DIR)
@@ -57,6 +32,8 @@ rule angsd_permuted_saf_likelihood_byCity_byHabitat:
         time = '03:00:00'
     shell:
         """
+        NUM_IND=$(wc -l < {input.bams});
+        MIN_IND=$(( NUM_IND*60/100 ));
         angsd -GL 1 \
             -out {params.out} \
             -nThreads {threads} \
@@ -64,8 +41,9 @@ rule angsd_permuted_saf_likelihood_byCity_byHabitat:
             -baq 2 \
             -ref {input.ref} \
             -sites {input.sites} \
-            -minQ 20 \
+            -minInd $MIN_IND \
             -minMapQ 30 \
+            -minQ 20 \
             -doSaf 1 \
             -anc {input.ref} \
             -bam {input.bams} 2> {log}
@@ -78,10 +56,10 @@ rule angsd_estimate_permuted_joint_sfs_byCity:
     """
     input:
         saf = get_habitat_saf_files_byCity_permuted,
-        sites = rules.select_random_degenerate_sites.output
+        sites = rules.convert_sites_for_angsd.output
     output:
         '{0}/sfs/by_city/{{city}}/randomized/{{city}}_{{site}}_seed{{seed}}_r_u.2dsfs'.format(ANGSD_DIR)
-    log: 'logs/angsd_estimate_permuted_2dsfs_byCity/{city}_{site}_seed{seed}.2dsfs.log'
+    log: LOG_DIR + '/angsd_estimate_permuted_2dsfs_byCity/{city}_{site}_seed{seed}.2dsfs.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     threads: 10
     resources:
@@ -104,10 +82,10 @@ rule angsd_estimate_permuted_sfs_byCity_byHabitat:
     """
     input:
         saf = rules.angsd_permuted_saf_likelihood_byCity_byHabitat.output.saf_idx,
-        sites = rules.select_random_degenerate_sites.output
+        sites = rules.convert_sites_for_angsd.output
     output:
         '{0}/sfs/by_city/{{city}}/randomized/{{city}}_{{habitat}}_{{site}}_seed{{seed}}.sfs'.format(ANGSD_DIR)
-    log: 'logs/angsd_estimate_permuted_sfs_byCity_byHabitat/{city}_{habitat}_{site}_seed{seed}_sfs.log'
+    log: LOG_DIR + '/angsd_estimate_permuted_sfs_byCity_byHabitat/{city}_{habitat}_{site}_seed{seed}_sfs.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     threads: 10
     resources:
@@ -135,11 +113,11 @@ rule angsd_permuted_fst_index:
     input: 
         saf_idx = get_habitat_saf_files_byCity_permuted,
         joint_sfs = rules.angsd_estimate_permuted_joint_sfs_byCity.output,
-        sites = rules.select_random_degenerate_sites.output
+        sites = rules.convert_sites_for_angsd.output
     output:
         fst = '{0}/summary_stats/hudson_fst/{{city}}/randomized/{{city}}_{{site}}_seed{{seed}}_r_u.fst.gz'.format(ANGSD_DIR),
         idx = '{0}/summary_stats/hudson_fst/{{city}}/randomized/{{city}}_{{site}}_seed{{seed}}_r_u.fst.idx'.format(ANGSD_DIR)
-    log: 'logs/angsd_permuted_fst_index/{city}_{site}_seed{seed}_index.log'
+    log: LOG_DIR + '/angsd_permuted_fst_index/{city}_{site}_seed{seed}_index.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     threads: 4
     resources:
@@ -167,7 +145,7 @@ rule angsd_permuted_fst_readable:
         rules.angsd_permuted_fst_index.output.idx
     output:
         '{0}/summary_stats/hudson_fst/{{city}}/randomized/{{city}}_{{site}}_seed{{seed}}_r_u_readable.fst'.format(ANGSD_DIR)
-    log: 'logs/angsd_permuted_fst_readable/{city}_{site}_seed{seed}_readable.log'
+    log: LOG_DIR + '/angsd_permuted_fst_readable/{city}_{site}_seed{seed}_readable.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     shell:
         """
@@ -181,11 +159,11 @@ rule angsd_estimate_permuted_thetas_byCity_byHabitat:
     input:
         saf_idx = rules.angsd_permuted_saf_likelihood_byCity_byHabitat.output.saf_idx,
         sfs = rules.angsd_estimate_permuted_sfs_byCity_byHabitat.output,
-        sites = rules.select_random_degenerate_sites.output
+        sites = rules.convert_sites_for_angsd.output
     output:
         idx = '{0}/summary_stats/thetas/by_city/{{city}}/randomized/{{city}}_{{habitat}}_{{site}}_seed{{seed}}.thetas.idx'.format(ANGSD_DIR),
         thet = '{0}/summary_stats/thetas/by_city/{{city}}/randomized/{{city}}_{{habitat}}_{{site}}_seed{{seed}}.thetas.gz'.format(ANGSD_DIR)
-    log: 'logs/angsd_estimate_permuted_thetas_byCity_byHabitat/{city}_{habitat}_{site}_seed{seed}_thetas.log'
+    log: LOG_DIR + '/angsd_estimate_permuted_thetas_byCity_byHabitat/{city}_{habitat}_{site}_seed{seed}_thetas.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     threads: 4
     params:
@@ -211,7 +189,7 @@ rule angsd_permuted_diversity_neutrality_stats_byCity_byHabitat:
         rules.angsd_estimate_permuted_thetas_byCity_byHabitat.output.idx
     output:
        '{0}/summary_stats/thetas/by_city/{{city}}/randomized/{{city}}_{{habitat}}_{{site}}_seed{{seed}}.thetas.idx.pestPG'.format(ANGSD_DIR)
-    log: 'logs/angsd_permuted_diversity_neutrality_stats_byCity_byHabitat/{city}_{habitat}_{site}_seed{seed}_diversity_neutrality.log'
+    log: LOG_DIR + '/angsd_permuted_diversity_neutrality_stats_byCity_byHabitat/{city}_{habitat}_{site}_seed{seed}_diversity_neutrality.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
@@ -230,6 +208,7 @@ rule angsd_byCity_byHabitat_permuted_done:
     Generate empty flag file signalling successful completion of pairwise pi and Fst analysis
     """
     input:
+        expand(rules.create_random_bam_list_byCity_byHabitat.output, city=CITIES, habitat=HABITATS, site=['4fold'], seed=BOOT_SEEDS),
         expand(rules.angsd_permuted_fst_readable.output, city=CITIES, site=['4fold'], seed=BOOT_SEEDS),
         expand(rules.angsd_permuted_diversity_neutrality_stats_byCity_byHabitat.output, city=CITIES, habitat=HABITATS, site=['4fold'], seed=BOOT_SEEDS)
     output:

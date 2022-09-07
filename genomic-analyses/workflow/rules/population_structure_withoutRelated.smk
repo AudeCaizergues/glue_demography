@@ -1,5 +1,94 @@
 # Population structure analyses. 
 
+###############
+#### SETUP ####
+###############
+
+rule pruneGLs_degenerateSNPs_withoutRelated:
+    input:
+        gls = rules.angsd_gl_allSamples_alldegenerates_withoutRelated.output.gls,
+        pos = rules.prune_degenerateSNPs_forPopStructure.output
+    output:
+        '{0}/gls/allSamples/{{site}}/withoutRelated/{{chrom}}/{{chrom}}_{{site}}_maf{{maf}}_pruned.beagle.gz'.format(ANGSD_DIR)
+    log: LOG_DIR + '/pruneGLs_degenerateSNPs/withoutRelated/{chrom}_{site}_maf{maf}_pruneGLs.log'
+    params:
+        out = '{0}/gls/allSamples/{{site}}/withoutRelated/{{chrom}}/{{chrom}}_{{site}}_maf{{maf}}_pruned.beagle'.format(ANGSD_DIR)
+    shell:
+        """
+        ( sed 's/:/_/g' {input.pos} > {input.pos}.temp
+          zgrep 'marker' {input.gls} > {params.out} &&
+                zgrep -w -f {input.pos}.temp {input.gls} >> {params.out} &&
+                gzip {params.out}
+                rm {input.pos}.temp ) 2> {log}
+        """
+        
+rule concat_angsd_gl_pruned_withoutRelated:
+    """
+    Concatenated GLs from all 16 chromosomes into single file. Done separately for each site type.
+    """
+    input:
+    	lambda wildcards: expand(rules.pruneGLs_degenerateSNPs_withoutRelated.output, chrom=CHROMOSOMES, site=wildcards.site, maf=wildcards.maf)
+    output:
+        '{0}/gls/allSamples/{{site}}/withoutRelated/allChroms_{{site}}_maf{{maf}}_pruned_withoutRelated.beagle.gz'.format(ANGSD_DIR)
+    log: LOG_DIR + '/concat_angsd_gl_pruned/withoutRelated/allSamples_{site}_{maf}_concat_withoutRelated.log'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933' 
+    shell:
+        """
+        first=1
+        for f in {input}; do
+            if [ "$first"  ]; then
+                zcat "$f"
+                first=
+            else
+                zcat "$f"| tail -n +2
+            fi
+        done | bgzip -c > {output} 2> {log}
+        """
+      
+
+#by city
+rule pruneGLs_byCity_degenerateSNPs_withoutRelated:
+    input:
+        gls = rules.angsd_gl_byCity_withoutRelated.output.gls,
+        pos = rules.prune_degenerateSNPs_forPopStructure.output
+    output:
+        '{0}/gls/by_city/{{site}}/withoutRelated/{{city}}/{{chrom}}/{{city}}_{{chrom}}_{{site}}_maf{{maf}}_pruned_withoutRelated.beagle.gz'.format(ANGSD_DIR)
+    log: LOG_DIR + '/pruneGLs_degenerateSNPs_by_city/withoutRelated/{city}/{chrom}/{city}_{chrom}_{site}_maf{maf}_pruneGLs_withoutRelated.log'
+    params:
+        out = '{0}/gls/by_city/{{site}}/withoutRelated/{{city}}/{{chrom}}/{{city}}_{{chrom}}_{{site}}_maf{{maf}}_pruned_withoutRelated.beagle'.format(ANGSD_DIR)
+    priority: 50
+    shell:
+        """
+        ( sed 's/:/_/g' {input.pos} > {input.pos}.temp
+          zgrep 'marker' {input.gls} > {params.out} &&
+                zgrep -w -f {input.pos}.temp {input.gls} >> {params.out} &&
+                gzip {params.out} ) 2> {log}
+        """
+       
+rule concat_angsd_byCity_gl_pruned_withoutRelated:
+    """
+    Concatenated GLs from all 16 chromosomes into single file. Done separately for each site type.
+    """
+    input:
+    	lambda w: expand(rules.pruneGLs_byCity_degenerateSNPs_withoutRelated.output, chrom=CHROMOSOMES, city=w.city, site=w.site, maf=w.maf)
+    output:
+        '{0}/gls/byCity/{{site}}/withoutRelated/allChrom_{{city}}_{{site}}_maf{{maf}}_pruned_withoutRelated.beagle.gz'.format(ANGSD_DIR)
+    log: LOG_DIR + '/concat_angsd_gl_pruned/withoutRelated/by_city/{city}_{site}_{maf}_concat_withoutRelated.log'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933' 
+    shell:
+        """
+        first=1
+        for f in {input}; do
+            if [ "$first"  ]; then
+                zcat "$f"
+                first=
+            else
+                zcat "$f"| tail -n +2
+            fi
+        done | bgzip -c > {output} 2> {log}
+        """
+## gls devrait avoir les noms d'indiv en premiere ligne, mais c'est du binaire, regarder sur les fichiers chrom si ça vient de la à l'origine
+ 
 #######################
 ### PCA & ADMIXTURE ###
 #######################
@@ -10,12 +99,12 @@
 #### GLOBAL PCA ####
 ####################
 
-rule pcangsd_allSamples:
+rule pcangsd_allSamples_withoutRelated:
     """
     Perform PCA using genome-wide 4fold dengenerate sites using all samples from all cities.
     """
     input:
-        rules.concat_angsd_gl_pruned.output
+        rules.concat_angsd_gl_pruned_withoutRelated.output
     output:
         '{0}/pcangsd/allSamples/pcangsd_withoutRelated/allSamples_{{site}}_maf{{maf}}_pcangsd.cov'.format(POP_STRUC_DIR),
     log: LOG_DIR + '/pcangsd_allSamples/pcangsd_withoutRelated/allSamples_{site}_maf{maf}_pcangsd.log'
@@ -42,12 +131,12 @@ rule pcangsd_allSamples:
 #####################
 
 
-rule pcangsd_byCity:
+rule pcangsd_byCity_withoutRelated:
     """
     Perform PCA by city using genome-wide 4fold dengenerate sites and estimate admixture proportions
     """
     input:
-        rules.angsd_gl_byCity.output.gls
+        rules.concat_angsd_byCity_gl_pruned_withoutRelated.output
     output:
         cov = '{0}/pcangsd/by_city/pcangsd_withoutRelated/{{city}}/{{city}}_{{site}}_maf{{maf}}_pcangsd.cov'.format(POP_STRUC_DIR),
         Q = '{0}/pcangsd/by_city/pcangsd_withoutRelated/{{city}}/{{city}}_{{site}}_maf{{maf}}_pcangsd.admix.Q.npy'.format(POP_STRUC_DIR)
@@ -77,7 +166,7 @@ rule pcangsd_byCity:
 
 rule ngsadmix:
     input:
-        rules.angsd_gl_byCity.output
+        rules.concat_angsd_byCity_gl_pruned_withoutRelated.output
     output:
         fopt = '{0}/ngsadmix/{{city}}/K{{k}}/ngsadmix_{{city}}_{{site}}_maf{{maf}}_K{{k}}_seed{{seed}}.fopt.gz'.format(POP_STRUC_DIR),
         qopt = '{0}/ngsadmix/{{city}}/K{{k}}/ngsadmix_{{city}}_{{site}}_maf{{maf}}_K{{k}}_seed{{seed}}.qopt'.format(POP_STRUC_DIR),
@@ -106,7 +195,7 @@ rule logfile_for_clumpak:
     Create Inputfile for CLUMPAK containing Log likelihood values of NGSadmix runs for each K
     """
     input:
-        expand(rules.ngsadmix.output.lf, city=CITIES, site='4fold', maf='0.05', k=NGSADMIX_K, seed=NGSADMIX_SEEDS)
+        lambda w: expand(rules.ngsadmix.output.lf, city=w.city, site='4fold', maf='0.05', k=NGSADMIX_K, seed=NGSADMIX_SEEDS)
     output:
         '{0}/clumpak/ngsadmix_logfile_for_clumpak_{{city}}.txt'.format(PROGRAM_RESOURCE_DIR)
     run:
@@ -130,10 +219,10 @@ rule clumpak_best_k_by_evanno:
         rules.logfile_for_clumpak.output
     output:
         directory('{0}/bestKbyEvanno/{{city}}/'.format(POP_STRUC_DIR))
-    log: LOG_DIR + '/clumpak_best_k_by_evanno/evanno_{{city}}.log'
+    log: LOG_DIR + '/clumpak_best_k_by_evanno/evanno_{city}.log'
     container: 'library://james-s-santangelo/clumpak/clumpak:1.1'
     params:
-        outdir = '{0}/bestKbyEvanno'.format(POP_STRUC_DIR)
+        outdir = '{0}/bestKbyEvanno/{{city}}/'.format(POP_STRUC_DIR)
     resources:
         mem_mb = 1000,
         time = '01:00:00'
@@ -149,17 +238,18 @@ rule clumpak_best_k_by_evanno:
 #### POST ####
 ##############
 
-rule pop_structure_done:
+rule population_structure_withoutRelated:
     """
     Generate empty flag file signaling successful completion of PCAngsd
     """
     input:
-        expand(rules.pcangsd_allSamples.output, site = '4fold', maf = ['0.05']),
-        expand(rules.pcangsd_byCity.output, site = '4fold', maf = '0.05', city = CITIES),
+        expand(rules.pruneGLs_byCity_degenerateSNPs_withoutRelated.output, site = '4fold', maf = '0.05', city = CITIES, chrom=CHROMOSOMES),
+        expand(rules.pcangsd_allSamples_withoutRelated.output, site = '4fold', maf = ['0.05']),
+        expand(rules.pcangsd_byCity_withoutRelated.output, site = '4fold', maf = '0.05', city = CITIES),
         expand(rules.ngsadmix.output, site = '4fold', maf = '0.05', city = CITIES, seed=NGSADMIX_SEEDS, k=NGSADMIX_K),
         expand(rules.clumpak_best_k_by_evanno.output, city = CITIES)
     output:
-        '{0}/population_structure.done'.format(POP_STRUC_DIR)
+        '{0}/population_structure_withoutRelated.done'.format(POP_STRUC_DIR)
     shell:
         """
         touch {output}

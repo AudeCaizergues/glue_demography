@@ -82,10 +82,10 @@ def get_files_for_saf_estimation_byCity_byHabitat(wildcards):
     """
     Get files to estimate SAF likelihhods for urban and rural habitats by city.
     """
-    sites_idx = expand(rules.angsd_index_prunedSNPs.output.idx, site=wildcards.site)
-    sites = expand(rules.pruned_degenerate_angsd_format.output, site=wildcards.site)
+    sites_idx = expand(rules.angsd_index_degenerate_sites.output.idx, site=wildcards.site)
+    sites = expand(rules.convert_sites_for_angsd.output, site=wildcards.site)
     ref = rules.unzip_reference.output
-    bams = expand(rules.create_bam_list_byCity_byHabitat.output, city=wildcards.city, habitat=wildcards.habitat, site = wildcards.site, sample=FINAL_SAMPLES)
+    bams = expand(rules.create_bam_list_byCity_byHabitat_withoutRelated.output, city=wildcards.city, habitat=wildcards.habitat, site = wildcards.site, sample=FINAL_SAMPLES)
     return { 'bams' : bams, 'sites_idx' : sites_idx , 'sites' : sites, 'ref' : ref }
 
 def get_files_for_alleleFreq_estimation_byCity_byHabitat(wildcards):
@@ -110,16 +110,16 @@ def get_urban_rural_bam_lists(wildcards):
     """
     Collect files with paths to urban and rural bams by City. Return as dictionary. 
     """
-    urban = expand(rules.create_bam_list_byCity_byHabitat.output, city=wildcards.city, habitat='u', site=wildcards.site)[0]
-    rural = expand(rules.create_bam_list_byCity_byHabitat.output, city=wildcards.city, habitat='r', site=wildcards.site)[0]
+    urban = expand(rules.create_bam_list_byCity_byHabitat_withoutRelated.output, city=wildcards.city, habitat='u', site=wildcards.site)[0]
+    rural = expand(rules.create_bam_list_byCity_byHabitat_withoutRelated.output, city=wildcards.city, habitat='r', site=wildcards.site)[0]
     return { 'urban_bams' : urban, 'rural_bams' : rural }
 
 def get_files_for_permuted_saf_estimation(wildcards):
     """
     Get files to estimate SAF likelihoods for permuted versions of "urban" and "rural" populations
     """
-    sites_idx = expand(rules.angsd_index_random_degen_sites.output.idx, site=wildcards.site)
-    sites = expand(rules.select_random_degenerate_sites.output, site=wildcards.site)
+    sites_idx = expand(rules.angsd_index_degenerate_sites.output.idx, site=wildcards.site)
+    sites = expand(rules.convert_sites_for_angsd.output, site=wildcards.site)
     ref = rules.unzip_reference.output
     if wildcards.habitat == 'u':
         bams = expand(rules.create_random_bam_list_byCity_byHabitat.output.urban, city=wildcards.city, seed=wildcards.seed, site=wildcards.site)
@@ -172,8 +172,8 @@ def get_bams_for_read_counts(wildcards):
 #    return { 'saf_urban' : saf_urban , 'saf_rural' : saf_rural, 'sfs_urban' : sfs_urban, 'sfs_rural' : sfs_rural, 'ref' : ref }
 
 def get_dadi_sfs_input_files(wildcards):
-    hab1 = 'urban'
-    hab2 = 'rural'
+    hab1 = '_u_'
+    hab2 = '_r_'
     saf_files = expand(rules.angsd_saf_likelihood_byCity_byHabitat.output.saf_idx, city=wildcards.city, habitat=HABITATS, site='4fold')  
     sfs_files = expand(rules.angsd_estimate_sfs_byCity_byHabitat.output, city=wildcards.city, habitat=HABITATS, site='4fold') 
     saf_urban = [x for x in saf_files if '{0}'.format(hab1) in os.path.basename(x)]
@@ -183,3 +183,8 @@ def get_dadi_sfs_input_files(wildcards):
     ref = rules.unzip_reference.output
     return { 'saf_urban' : saf_urban , 'saf_rural' : saf_rural, 'sfs_urban' : sfs_urban, 'sfs_rural' : sfs_rural, 'ref' : ref }
 
+#def get_sfs_to_format_for_dadi(wildcards):
+#     sfs = expand(rules.dadi_sfs.output)
+#     n_urb =
+#     n_rur =
+#     return 
