@@ -105,13 +105,13 @@ localrules: create_tmp_dir, create_samples_to_remove, create_bam_list_finalSampl
 rule all:
    input:
         # Degeneracy
-        '{0}/degeneracy.done'.format(PROGRAM_RESOURCE_DIR),
+        #'{0}/degeneracy.done'.format(PROGRAM_RESOURCE_DIR),
         # Angsd
         #'{0}/angsd_allSamples.done'.format(ANGSD_DIR), # removing this part that works on a subset of the 4fold sites
         #'{0}/angsd_allSamples_alldegenerates.done'.format(ANGSD_DIR),
         #'{0}/angsd_byCity.done'.format(ANGSD_DIR),
-        '{0}/angsd_allSamples_alldegenerates_withoutRelated.done'.format(ANGSD_DIR),
-        '{0}/angsd_byCity_withoutRelated.done'.format(ANGSD_DIR),
+        #'{0}/angsd_allSamples_alldegenerates_withoutRelated.done'.format(ANGSD_DIR),
+        #'{0}/angsd_byCity_withoutRelated.done'.format(ANGSD_DIR),
         '{0}/angsd_byCity_byHabitat.done'.format(ANGSD_DIR),
         #'{0}/permuted_bam_list.done'.format(ANGSD_DIR),
         #'{0}/angsd_byCity_byHabitat_permuted.done'.format(ANGSD_DIR),
@@ -135,7 +135,7 @@ rule create_tmp_dir:
 # Snakefiles with rules for particular pieces of the pipeline
 # See Snakefiles for details
 include: 'rules/common.smk'
-include: 'rules/degeneracy.smk'
+#include: 'rules/degeneracy.smk'
 #include: 'rules/angsd_allSamples.smk'
 #include: 'rules/angsd_allSamples_allDegenerates.smk'
 #include: 'rules/angsd_allSamples_allDegenerates_withoutRelated.smk'
@@ -143,7 +143,7 @@ include: 'rules/angsd_byCity_byHabitat.smk'
 #include: 'rules/permute_bam_lists.smk'
 #include: 'rules/angsd_byCity_byHabitat_permute.smk'
 #include: 'rules/angsd_byCity.smk'
-include: 'rules/angsd_byCity_withoutRelated.smk'
+#include: 'rules/angsd_byCity_withoutRelated.smk'
 #include: 'rules/LD.smk'
 #include: 'rules/Relatedness.smk'
 #include: 'rules/population_structure_withRelated.smk'
