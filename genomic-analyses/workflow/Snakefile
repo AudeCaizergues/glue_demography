@@ -108,20 +108,20 @@ rule all:
         '{0}/degeneracy.done'.format(PROGRAM_RESOURCE_DIR),
         # Angsd
         #'{0}/angsd_allSamples.done'.format(ANGSD_DIR), # removing this part that works on a subset of the 4fold sites
-        '{0}/angsd_allSamples_alldegenerates.done'.format(ANGSD_DIR),
-        '{0}/angsd_byCity.done'.format(ANGSD_DIR),
+        #'{0}/angsd_allSamples_alldegenerates.done'.format(ANGSD_DIR),
+        #'{0}/angsd_byCity.done'.format(ANGSD_DIR),
         '{0}/angsd_allSamples_alldegenerates_withoutRelated.done'.format(ANGSD_DIR),
         '{0}/angsd_byCity_withoutRelated.done'.format(ANGSD_DIR),
         '{0}/angsd_byCity_byHabitat.done'.format(ANGSD_DIR),
-        '{0}/permuted_bam_list.done'.format(ANGSD_DIR),
-        '{0}/angsd_byCity_byHabitat_permuted.done'.format(ANGSD_DIR),
+        #'{0}/permuted_bam_list.done'.format(ANGSD_DIR),
+        #'{0}/angsd_byCity_byHabitat_permuted.done'.format(ANGSD_DIR),
         # Population structure
-        '{0}/LD.done'.format(ANGSD_DIR),
-        '{0}/Relatedness.done'.format(ANGSD_DIR),
-        '{0}/population_structure_withRelated.done'.format(POP_STRUC_DIR),
+        #'{0}/LD.done'.format(ANGSD_DIR),
+        #'{0}/Relatedness.done'.format(ANGSD_DIR),
+        #'{0}/population_structure_withRelated.done'.format(POP_STRUC_DIR),
         '{0}/population_structure_withoutRelated.done'.format(POP_STRUC_DIR),
         # Ne reconstruction initialisation
-        '{0}/blueprints.done'.format(STAIRWAYPLOT_DIR),
+        #'{0}/blueprints.done'.format(STAIRWAYPLOT_DIR),
         # Demographic modelling
         '{0}/sfs_for_dadi.done'.format(DADI_DIR),
         #'{0}/dadi.done'.format(DADI_DIR),
@@ -137,17 +137,17 @@ rule create_tmp_dir:
 include: 'rules/common.smk'
 include: 'rules/degeneracy.smk'
 #include: 'rules/angsd_allSamples.smk'
-include: 'rules/angsd_allSamples_allDegenerates.smk'
-include: 'rules/angsd_allSamples_allDegenerates_withoutRelated.smk'
+#include: 'rules/angsd_allSamples_allDegenerates.smk'
+#include: 'rules/angsd_allSamples_allDegenerates_withoutRelated.smk'
 include: 'rules/angsd_byCity_byHabitat.smk'
-include: 'rules/permute_bam_lists.smk'
-include: 'rules/angsd_byCity_byHabitat_permute.smk'
-include: 'rules/angsd_byCity.smk'
+#include: 'rules/permute_bam_lists.smk'
+#include: 'rules/angsd_byCity_byHabitat_permute.smk'
+#include: 'rules/angsd_byCity.smk'
 include: 'rules/angsd_byCity_withoutRelated.smk'
-include: 'rules/LD.smk'
-include: 'rules/Relatedness.smk'
-include: 'rules/population_structure_withRelated.smk'
+#include: 'rules/LD.smk'
+#include: 'rules/Relatedness.smk'
+#include: 'rules/population_structure_withRelated.smk'
 include: 'rules/population_structure_withoutRelated.smk'
-include: 'rules/blueprints_stairwayplot2.smk'
+#include: 'rules/blueprints_stairwayplot2.smk'
 include: 'rules/sfs_for_dadi.smk'
 #include: 'rules/dadi_demographic_models.smk'
