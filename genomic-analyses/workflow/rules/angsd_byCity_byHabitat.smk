@@ -4,6 +4,30 @@
 #### SFS AND SUMMARY STATS ####
 ###############################
 
+rule create_bam_list_byCity_byHabitat_withoutRelated:
+    """
+    Create text file with paths to BAM files in each habitat by city. 
+    """
+    input:
+        rules.create_bam_list_finalSamples_withoutRelated.output
+    output:
+        '{0}/bam_lists/by_city/withoutRelated/{{city}}/{{city}}_{{habitat}}_{{site}}_bams.list'.format(PROGRAM_RESOURCE_DIR)
+    log: LOG_DIR + '/create_bam_list_byCity_byHabitat_withoutRelated/withoutRelated/{city}_{habitat}_{site}_concat.log' 
+    run:
+        import os
+        import pandas as pd
+        df = pd.read_table(config['samples_noRelated'], sep = '\t')
+        df_sub = df[(df['city'] == wildcards.city) & (df['site'] == wildcards.habitat)]
+        samples_city_habitat = df_sub['sample'].tolist()
+        bams = open(input[0], 'r').readlines()
+        with open(output[0], 'w') as f:
+            for bam in bams:
+                search = re.search('^(.+)(?=_\w)', os.path.basename(bam))
+                sample = search.group(1)
+                if sample in samples_city_habitat:
+                    f.write('{0}'.format(bam))
+
+                    
 rule angsd_saf_likelihood_byCity_byHabitat:
     """
     Generate Site Allele Frequency (SAF) likelihood file for each habitat in each city using ANGSD. 
