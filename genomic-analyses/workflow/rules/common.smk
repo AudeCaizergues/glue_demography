@@ -82,9 +82,9 @@ def get_files_for_saf_estimation_byCity_byHabitat(wildcards):
     """
     Get files to estimate SAF likelihhods for urban and rural habitats by city.
     """
-    sites_idx = /scratch/projects/trifolium/glue/demography/glue_demography/results/program_resources/angsd_sites/Trepens_4fold.sites.idx
-    sites = /scratch/projects/trifolium/glue/demography/glue_demography/results/program_resources/angsd_sites/Trepens_4fold.sites
-    ref = /scratch/projects/trifolium/glue/demography/glue_demography/genomic-analyses/resources/ref/GCA_005869975.1_AgR_To_v5_genomic.fna
+    sites_idx = "/scratch/projects/trifolium/glue/demography/glue_demography/results/program_resources/angsd_sites/Trepens_4fold.sites.idx"
+    sites = "/scratch/projects/trifolium/glue/demography/glue_demography/results/program_resources/angsd_sites/Trepens_4fold.sites"
+    ref = "/scratch/projects/trifolium/glue/demography/glue_demography/genomic-analyses/resources/ref/GCA_005869975.1_AgR_To_v5_genomic.fna"
     bams = expand(rules.create_bam_list_byCity_byHabitat_withoutRelated.output, city=wildcards.city, habitat=wildcards.habitat, site = wildcards.site, sample=FINAL_SAMPLES)
     return { 'bams' : bams, 'sites_idx' : sites_idx , 'sites' : sites, 'ref' : ref }
 
