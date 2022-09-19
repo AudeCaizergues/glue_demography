@@ -115,8 +115,8 @@ rule angsd_estimate_joint_sfs_byCity:
     """
     input:
         saf = get_habitat_saf_files_byCity,
-        sites = rules.convert_sites_for_angsd.output,
-        idx = rules.angsd_index_degenerate_sites.output,
+        sites = "/scratch/projects/trifolium/glue/demography/glue_demography/results/program_resources/angsd_sites/Trepens_4fold.sites",
+        idx = "/scratch/projects/trifolium/glue/demography/glue_demography/results/program_resources/angsd_sites/Trepens_4fold.sites.idx",
     output:
         '{0}/sfs/by_city/{{city}}/{{city}}_{{site}}_r_u.2dsfs'.format(ANGSD_DIR)
     log: LOG_DIR + '/angsd_estimate_2dsfs_byCity/{city}_{site}.2dsfs.log'
@@ -141,8 +141,8 @@ rule angsd_estimate_sfs_byCity_byHabitat:
     """
     input:
         saf = rules.angsd_saf_likelihood_byCity_byHabitat.output.saf_idx,
-        sites = rules.convert_sites_for_angsd.output,
-        idx = rules.angsd_index_degenerate_sites.output,
+        sites = "/scratch/projects/trifolium/glue/demography/glue_demography/results/program_resources/angsd_sites/Trepens_4fold.sites",
+        idx = "/scratch/projects/trifolium/glue/demography/glue_demography/results/program_resources/angsd_sites/Trepens_4fold.sites.idx",
     output:
         '{0}/sfs/by_city/{{city}}/{{city}}_{{habitat}}_{{site}}.sfs'.format(ANGSD_DIR)
     log: LOG_DIR + '/angsd_estimate_sfs_byCity_byHabitat/{city}_{habitat}_{site}_sfs.log'
@@ -172,7 +172,7 @@ rule angsd_fst_index:
     input: 
         saf_idx = get_habitat_saf_files_byCity,
         joint_sfs = rules.angsd_estimate_joint_sfs_byCity.output,
-        sites = rules.convert_sites_for_angsd.output
+        sites = "/scratch/projects/trifolium/glue/demography/glue_demography/results/program_resources/angsd_sites/Trepens_4fold.sites"
     output:
         fst = '{0}/summary_stats/hudson_fst/{{city}}/{{city}}_{{site}}_r_u.fst.gz'.format(ANGSD_DIR),
         idx = '{0}/summary_stats/hudson_fst/{{city}}/{{city}}_{{site}}_r_u.fst.idx'.format(ANGSD_DIR)
@@ -217,7 +217,7 @@ rule angsd_estimate_thetas_byCity_byHabitat:
     input:
         saf_idx = rules.angsd_saf_likelihood_byCity_byHabitat.output.saf_idx,
         sfs = rules.angsd_estimate_sfs_byCity_byHabitat.output,
-        sites = rules.convert_sites_for_angsd.output
+        sites = "/scratch/projects/trifolium/glue/demography/glue_demography/results/program_resources/angsd_sites/Trepens_4fold.sites"
     output:
         idx = '{0}/summary_stats/thetas/by_city/{{city}}/{{city}}_{{habitat}}_{{site}}.thetas.idx'.format(ANGSD_DIR),
         thet = '{0}/summary_stats/thetas/by_city/{{city}}/{{city}}_{{habitat}}_{{site}}.thetas.gz'.format(ANGSD_DIR)
