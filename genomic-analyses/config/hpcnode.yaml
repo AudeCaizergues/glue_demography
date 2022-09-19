@@ -5,15 +5,15 @@ chromosomes: ../resources/chromosome_file.txt
 
 # Path to used files
 gff: ../resources/TrR.v5.renamed_reformated.gtf.gz
-bam_path: /scratch/projects/trifolium/glue/pc/results/bam/4fold
+bam_path: /scratch/projects/trifolium/gwsd/results/bam/4fold/4fold
 qualimap_bamqc: ../resources/multiqc_qualimap_bamqc_genome_results_qualimap_bamqc.txt
 ref_dir: ../resources/ref
 stairway_dir: scripts/stairwayplot2
 
 # Path prefixes for results output by this pipeline
-results_prefix: /scratch/projects/trifolium/glue/demography/glue_demography/results
-temp_dir: /scratch/projects/trifolium/glue/demography/glue_demography/tmp
-log_prefix: /scratch/projects/trifolium/glue/demography/glue_demography/results/log
+results_prefix: /scratch/projects/trifolium/glue/demography/toronto_deep/glue_demography/results
+temp_dir: /scratch/projects/trifolium/glue/demography/toronto_deep/glue_demography/tmp
+log_prefix: /scratch/projects/trifolium/glue/demography/toronto_deep/glue_demography/results/log
 
 # Samples to exclude based on QC (e.g., different species, low coverage, etc.) 
 related_samples_to_exclude: ['s_97_9', 's_37_18', 's_37_11', 's_42_3', 's_42_1', 's_83_11', 'Tehran_36_7', 'Tehran_36_8','Tehran_36_9','Tehran_36_10','Tehran_28_8','Tehran_39_2','Paris_11_7','Munich_1_6','Mexico_City_20_13','Mexico_City_30_14','Mexico_City_20_3','Mexico_City_1_18','Memphis_2_2','Melbourne_25_4','Landshut_5_14','Kunming_48_14','Kunming_1_10','Calgary_32_10','Athens_24_18']
