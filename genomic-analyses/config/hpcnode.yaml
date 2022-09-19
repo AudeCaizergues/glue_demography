@@ -1,5 +1,5 @@
 # Sample IDs as list
-samples: ../resources/glue_pc_sampleSheet.txt
+samples: ../resources/glue_pc_sampleSheet_noRelated.txt
 samples_noRelated : ../resources/glue_pc_sampleSheet_noRelated.txt
 chromosomes: ../resources/chromosome_file.txt
 
