@@ -4,6 +4,25 @@
 #### SFS AND SUMMARY STATS ####
 ###############################
 
+rule create_samples_to_remove:
+    """
+    Writes file with sample names for those with high alignment error rates.
+    Thresholds were assessed through exploratory analysis of QC data. 
+    """
+    input:
+        qc_data = ancient(config['qualimap_bamqc'])
+    output: 
+        error_df = '{0}/highErrorRate_toRemove.txt'.format(PROGRAM_RESOURCE_DIR)
+    run:
+        import pandas as pd
+        qc_data = pd.read_table(input.qc_data, sep = '\t')
+        qc_data['sample'] = qc_data['Sample'].str.extract('(\w+_\d+_\d+)')
+        cols = ['sample', 'mean_coverage', 'general_error_rate']
+        qc_data = qc_data[cols]
+        # Samples with high ealignment errors have error rates > 0.04
+        highError_samples = qc_data[qc_data['general_error_rate'] >= 0.03]
+        highError_samples['sample'].to_csv(output.error_df, header = None, index = None)
+	
 rule create_bam_list_finalSamples_withoutRelated:
 	"""
 	Create text file with paths to BAMs, excluding samples with high alignment error rates
