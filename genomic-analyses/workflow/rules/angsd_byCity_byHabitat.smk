@@ -4,6 +4,30 @@
 #### SFS AND SUMMARY STATS ####
 ###############################
 
+rule create_bam_list_finalSamples_withoutRelated:
+	"""
+	Create text file with paths to BAMs, excluding samples with high alignment error rates
+	"""
+	input:
+		bams = ancient(get_all_bams_withoutRelated(BAM_DIR)),
+		highErr = rules.create_samples_to_remove.output.error_df
+	output:
+		'{0}/bam_lists/withoutRelated/finalSamples_{{site}}_bams.list'.format(PROGRAM_RESOURCE_DIR)
+	log: LOG_DIR + '/create_bam_list/withoutRelated/finalSamples_{site}_bam_list.log'
+	run:
+		import os
+		import re
+		import pandas as pd
+		from contextlib import redirect_stderr
+		with open(log[0], 'w') as stderr, redirect_stderr(stderr):
+			bad_samples = pd.read_table(input.highErr, header=None).iloc[:,0].tolist()
+			with open(output[0], 'w') as f:
+				for bam in input.bams:
+					search = re.search('^(.+)(?=_\w)', os.path.basename(bam))
+					sample = search.group(1)
+					if sample not in bad_samples:
+						f.write('{0}\n'.format(bam))
+
 rule create_bam_list_byCity_byHabitat_withoutRelated:
     """
     Create text file with paths to BAM files in each habitat by city. 
