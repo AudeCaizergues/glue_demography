@@ -180,7 +180,7 @@ def get_dadi_sfs_input_files(wildcards):
     saf_rural = [x for x in saf_files if '{0}'.format(hab2) in os.path.basename(x)]
     sfs_urban = [x for x in sfs_files if '{0}'.format(hab1) in os.path.basename(x)]
     sfs_rural = [x for x in sfs_files if '{0}'.format(hab2) in os.path.basename(x)]
-    ref = rules.unzip_reference.output
+    ref = "/scratch/projects/trifolium/glue/demography/glue_demography/genomic-analyses/resources/ref/GCA_005869975.1_AgR_To_v5_genomic.fna"
     return { 'saf_urban' : saf_urban , 'saf_rural' : saf_rural, 'sfs_urban' : sfs_urban, 'sfs_rural' : sfs_rural, 'ref' : ref }
 
 #def get_sfs_to_format_for_dadi(wildcards):
