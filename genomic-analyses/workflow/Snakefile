@@ -119,7 +119,7 @@ rule all:
         #'{0}/LD.done'.format(ANGSD_DIR),
         #'{0}/Relatedness.done'.format(ANGSD_DIR),
         #'{0}/population_structure_withRelated.done'.format(POP_STRUC_DIR),
-        '{0}/population_structure_withoutRelated.done'.format(POP_STRUC_DIR),
+        #'{0}/population_structure_withoutRelated.done'.format(POP_STRUC_DIR),
         # Ne reconstruction initialisation
         #'{0}/blueprints.done'.format(STAIRWAYPLOT_DIR),
         # Demographic modelling
@@ -147,7 +147,7 @@ include: 'rules/angsd_byCity_byHabitat.smk'
 #include: 'rules/LD.smk'
 #include: 'rules/Relatedness.smk'
 #include: 'rules/population_structure_withRelated.smk'
-include: 'rules/population_structure_withoutRelated.smk'
+#include: 'rules/population_structure_withoutRelated.smk'
 #include: 'rules/blueprints_stairwayplot2.smk'
 include: 'rules/sfs_for_dadi.smk'
 #include: 'rules/dadi_demographic_models.smk'
