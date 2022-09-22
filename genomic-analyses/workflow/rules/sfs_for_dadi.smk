@@ -19,6 +19,7 @@ rule dadi_sfs:
             -sfs {input.sfs_rural} \
             -ref {input.ref} \
             -anc {input.ref} \
+            -fold 1 \
             -seed 42 -P {threads} -maxIter 2000 > {output} 2> {log}
         """
 
