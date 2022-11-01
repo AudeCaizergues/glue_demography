@@ -1,6 +1,7 @@
 # Sample IDs as list
-samples: ../resources/glue_pc_sampleSheet.txt
-samples_noRelated : ../resources/glue_pc_sampleSheet_noRelated.txt
+samples: ../resources/glue_allSamples_sampleSheet.txt
+#samples_noRelated : ../resources/glue_allSamples_sampleSheet.txt
+samples_noRelated : ../resources/glue_noLowCities_sampleSheet_noRelated.txt
 chromosomes: ../resources/chromosome_file.txt
 
 # Path to used files
@@ -16,7 +17,7 @@ temp_dir: /scratch/projects/trifolium/glue/demography/glue_demography/tmp
 log_prefix: /scratch/projects/trifolium/glue/demography/glue_demography/results/log
 
 # Samples to exclude based on QC (e.g., different species, low coverage, etc.) 
-related_samples_to_exclude: ['s_97_9', 's_37_18', 's_37_11', 's_42_3', 's_42_1', 's_83_11', 'Tehran_36_7', 'Tehran_36_8','Tehran_36_9','Tehran_36_10','Tehran_28_8','Tehran_39_2','Paris_11_7','Munich_1_6','Mexico_City_20_13','Mexico_City_30_14','Mexico_City_20_3','Mexico_City_1_18','Memphis_2_2','Melbourne_25_4','Landshut_5_14','Kunming_48_14','Kunming_1_10','Calgary_32_10','Athens_24_18']
+related_samples_to_exclude: ['s_97_9', 's_37_18', 's_37_11', 's_42_3', 's_42_1', 's_83_11', 'Tehran_36_7', 'Tehran_36_8','Tehran_36_9','Tehran_36_10','Tehran_28_8','Tehran_39_2','Paris_11_7','Munich_1_6','Mexico_City_20_13','Mexico_City_30_14','Mexico_City_20_3','Mexico_City_1_18','Memphis_2_2','Melbourne_25_4','Landshut_5_14','Kunming_48_14','Kunming_1_10','Calgary_32_10','Athens_24_18','Warsaw_48_3','Vancouver_2_12','Punt_Ar_3_18','Palm_North_39_6','Palm_North_40_18']
 
 # Parameters for variant calling and SFS estimation with ANGSD
 # TODO: Some other parameters are hardcoded in the Snakefiles. Should probably move them here or move this to the Snakefile for consistency

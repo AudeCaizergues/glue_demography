@@ -16,7 +16,8 @@ min_version('6.9.1')
 configfile: '../config/hpcnode.yaml'
 
 # Load sample sheet
-SAMPLE_SHEET_DF = pd.read_table(config['samples'], sep='\t')
+#SAMPLE_SHEET_DF = pd.read_table(config['samples'], sep='\t') #first round, with low qual cities and related individuals
+SAMPLE_SHEET_DF = pd.read_table(config['samples_noRelated'], sep='\t')
 
 # Sample and chromosome info
 SAMPLES = SAMPLE_SHEET_DF['sample'].tolist()
@@ -56,28 +57,6 @@ NGSADMIX_SEEDS = [x for x in range(1, 11)]
 # Parameters for pairwise pi and Fst
 BOOT_SEEDS = ['{0}'.format(x) for x in range(1,101)]
 
-# Dadi models
-DADI_MODELS = [
-    'no_div', 
-    'no_div_bot', 
-    'no_div_growth', 
-    'no_div_bot_growth', 
-    'split_no_mig', 
-    'split_sym_mig', 
-    'split_asym_mig',
-    'split_bot_urb_no_mig', 
-    'split_bot_urb_sym_mig', 
-    'split_bot_urb_asym_mig', 
-    'split_bot_rur_no_mig', 
-    'split_bot_rur_sym_mig', 
-    'split_bot_rur_asym_mig',
-    'split_growth_urb_no_mig',
-    'split_growth_urb_sym_mig',
-    'split_growth_urb_asym_mig',
-    'split_growth_rur_no_mig',
-    'split_growth_rur_sym_mig',
-    'split_growth_rur_asym_mig'
-    ] 
 
 ##################
 #### PIPELINE ####
@@ -108,22 +87,22 @@ rule all:
         '{0}/degeneracy.done'.format(PROGRAM_RESOURCE_DIR),
         # Angsd
         #'{0}/angsd_allSamples.done'.format(ANGSD_DIR), # removing this part that works on a subset of the 4fold sites
-        '{0}/angsd_allSamples_alldegenerates.done'.format(ANGSD_DIR),
-        '{0}/angsd_byCity.done'.format(ANGSD_DIR),
+        #'{0}/angsd_allSamples_alldegenerates.done'.format(ANGSD_DIR),
+        #'{0}/angsd_byCity.done'.format(ANGSD_DIR),
         '{0}/angsd_allSamples_alldegenerates_withoutRelated.done'.format(ANGSD_DIR),
         '{0}/angsd_byCity_withoutRelated.done'.format(ANGSD_DIR),
         '{0}/angsd_byCity_byHabitat.done'.format(ANGSD_DIR),
-        '{0}/permuted_bam_list.done'.format(ANGSD_DIR),
-        '{0}/angsd_byCity_byHabitat_permuted.done'.format(ANGSD_DIR),
+        #'{0}/permuted_bam_list.done'.format(ANGSD_DIR),
+        #'{0}/angsd_byCity_byHabitat_permuted.done'.format(ANGSD_DIR),
         # Population structure
-        '{0}/LD.done'.format(ANGSD_DIR),
-        '{0}/Relatedness.done'.format(ANGSD_DIR),
-        '{0}/population_structure_withRelated.done'.format(POP_STRUC_DIR),
-        '{0}/population_structure_withoutRelated.done'.format(POP_STRUC_DIR),
+        #'{0}/LD.done'.format(ANGSD_DIR),
+        #'{0}/Relatedness.done'.format(ANGSD_DIR),
+        #'{0}/population_structure_withRelated.done'.format(POP_STRUC_DIR),
+        #'{0}/population_structure_withoutRelated.done'.format(POP_STRUC_DIR),
         # Ne reconstruction initialisation
-        '{0}/blueprints.done'.format(STAIRWAYPLOT_DIR),
+        #'{0}/blueprints.done'.format(STAIRWAYPLOT_DIR),
         # Demographic modelling
-        '{0}/sfs_for_dadi.done'.format(DADI_DIR),
+        #'{0}/sfs_for_dadi.done'.format(DADI_DIR),
         #'{0}/dadi.done'.format(DADI_DIR),
 
 # Create temporary directory used throughout pipeline
@@ -147,7 +126,7 @@ include: 'rules/angsd_byCity_withoutRelated.smk'
 include: 'rules/LD.smk'
 include: 'rules/Relatedness.smk'
 include: 'rules/population_structure_withRelated.smk'
-include: 'rules/population_structure_withoutRelated.smk'
-include: 'rules/blueprints_stairwayplot2.smk'
-include: 'rules/sfs_for_dadi.smk'
+#include: 'rules/population_structure_withoutRelated.smk'
+#include: 'rules/blueprints_stairwayplot2.smk'
+#include: 'rules/sfs_for_dadi.smk'
 #include: 'rules/dadi_demographic_models.smk'

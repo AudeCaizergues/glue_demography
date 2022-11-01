@@ -38,7 +38,7 @@ rule concat_habitat_bamLists_withinCities:
         get_bamLists_toConcat
     output:
         '{0}/bam_lists/by_city/{{city}}/{{city}}_{{site}}_bams.list'.format(PROGRAM_RESOURCE_DIR)
-    log: 'logs/concat_habitat_bamLists_withinCities/{city}_{site}_concat.log'
+    log: LOG_DIR + '/concat_habitat_bamLists_withinCities/{city}_{site}_concat.log'
     shell:
         """
         cat {input} > {output} 2> {log}
@@ -53,7 +53,7 @@ rule remove_lowCovSamples_forPCA_byCity:
         qc_data = config['qualimap_bamqc']
     output:
         '{0}/bam_lists/by_city/{{city}}/{{city}}_{{site}}_lowCovRemoved_bams.list'.format(PROGRAM_RESOURCE_DIR)
-    log: 'logs/remove_lowCovSamples_forPCA_byCity/{city}_{site}_remove_lowCovSamples.log'
+    log: LOG_DIR + '/remove_lowCovSamples_forPCA_byCity/{city}_{site}_remove_lowCovSamples.log'
     params:
         cov = 0.2
     run:
@@ -95,7 +95,7 @@ rule angsd_gl_byCity:
     output:
         gls = '{0}/gls/by_city/{{city}}/{{city}}_{{site}}_maf{{maf}}.beagle.gz'.format(ANGSD_DIR),
         mafs = '{0}/gls/by_city/{{city}}/{{city}}_{{site}}_maf{{maf}}.mafs.gz'.format(ANGSD_DIR)
-    log: 'logs/angsd_gl_byCity_beagle/{city}_{site}_maf{maf}_beagleGL.log'
+    log: LOG_DIR + '/angsd_gl_byCity_beagle/{city}_{site}_maf{maf}_beagleGL.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933' 
     params:
         out = '{0}/gls/by_city/{{city}}/{{city}}_{{site}}_maf{{maf}}'.format(ANGSD_DIR)

@@ -34,7 +34,6 @@ rule concat_pruned_degenerate_angsd_format:
 		first=1
 		for f in {input}; do
 				cat "$f"
-			fi
 		done | bgzip -c > {output} 2> {log}
 		"""
 
