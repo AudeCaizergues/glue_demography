@@ -24,6 +24,8 @@ SAMPLES = SAMPLE_SHEET_DF['sample'].tolist()
 TOR_SAMPLES = [x for x in SAMPLES if x.startswith('s_')]
 CITIES = SAMPLE_SHEET_DF['city'].unique().tolist()
 HABITATS = SAMPLE_SHEET_DF['site'].unique().tolist()
+CITY_POP = SAMPLE_SHEET_DF['city_pop'].unique().tolist()
+POPU = SAMPLE_SHEET_DF['pop'].unique().tolist()
 CHROMOSOMES = pd.read_table(config['chromosomes'], header=None).iloc[:,0].tolist()
 GFF_FILE = ancient(config['gff'])
 
@@ -36,6 +38,7 @@ PROGRAM_RESOURCE_DIR = '{0}/program_resources'.format(config['results_prefix'])
 ANGSD_DIR = '{0}/angsd'.format(config['results_prefix'])
 NGSLD_DIR = '{0}/ngsld'.format(config['results_prefix'])
 POP_STRUC_DIR = '{0}/population_structure'.format(config['results_prefix'])
+EPOS_DIR = '{0}/epos'.format(config['results_prefix'])
 STAIRWAYPLOT_DIR = '{0}/stairway_plot_v2.1.1'.format(config['stairway_dir'])
 DADI_DIR = '{0}/dadi'.format(config['results_prefix'])
 FIGURES_DIR = '{0}/figures'.format(config['results_prefix'])
@@ -53,9 +56,16 @@ FINAL_SAMPLES = [x for x in SAMPLES if x not in RELATED_SAMPLES_TO_EXCLUDE]
 # Parameters for Admixture analysis 
 NGSADMIX_K = [x for x in range(2, 11)]
 NGSADMIX_SEEDS = [x for x in range(1, 11)]
+NGSADMIX_K2 = [x for x in range(2, 21)]
 
 # Parameters for pairwise pi and Fst
 BOOT_SEEDS = ['{0}'.format(x) for x in range(1,101)]
+NUMBER= config['seq_numbers']
+
+
+# Pairwise combinations of multi-individual populations
+POP_COMBO = config['pops_multi_ind_combo']
+
 
 
 ##################
@@ -86,14 +96,15 @@ rule all:
         # Degeneracy
         '{0}/degeneracy.done'.format(PROGRAM_RESOURCE_DIR),
         # Angsd
-        #'{0}/angsd_allSamples.done'.format(ANGSD_DIR), # removing this part that works on a subset of the 4fold sites
         #'{0}/angsd_allSamples_alldegenerates.done'.format(ANGSD_DIR),
         #'{0}/angsd_byCity.done'.format(ANGSD_DIR),
-        '{0}/angsd_allSamples_alldegenerates_withoutRelated.done'.format(ANGSD_DIR),
-        '{0}/angsd_byCity_withoutRelated.done'.format(ANGSD_DIR),
-        '{0}/angsd_byCity_byHabitat.done'.format(ANGSD_DIR),
+        #'{0}/angsd_allSamples_alldegenerates_withoutRelated.done'.format(ANGSD_DIR),
+        #'{0}/angsd_byCity_withoutRelated.done'.format(ANGSD_DIR),
+        #'{0}/angsd_byCity_byHabitat.done'.format(ANGSD_DIR),
         #'{0}/permuted_bam_list.done'.format(ANGSD_DIR),
         #'{0}/angsd_byCity_byHabitat_permuted.done'.format(ANGSD_DIR),
+        #'{0}/angsd_byCity_byHabitat_bootstrap.done'.format(ANGSD_DIR),
+        '{0}/angsd_byCity_byPop.done'.format(ANGSD_DIR),
         # Population structure
         #'{0}/LD.done'.format(ANGSD_DIR),
         #'{0}/Relatedness.done'.format(ANGSD_DIR),
@@ -101,6 +112,7 @@ rule all:
         #'{0}/population_structure_withoutRelated.done'.format(POP_STRUC_DIR),
         # Ne reconstruction initialisation
         #'{0}/blueprints.done'.format(STAIRWAYPLOT_DIR),
+        #'{0}/epos.done'.format(EPOS_DIR),
         # Demographic modelling
         #'{0}/sfs_for_dadi.done'.format(DADI_DIR),
         #'{0}/dadi.done'.format(DADI_DIR),
@@ -115,18 +127,20 @@ rule create_tmp_dir:
 # See Snakefiles for details
 include: 'rules/common.smk'
 include: 'rules/degeneracy.smk'
-#include: 'rules/angsd_allSamples.smk'
 include: 'rules/angsd_allSamples_allDegenerates.smk'
 include: 'rules/angsd_allSamples_allDegenerates_withoutRelated.smk'
 include: 'rules/angsd_byCity_byHabitat.smk'
 include: 'rules/permute_bam_lists.smk'
 include: 'rules/angsd_byCity_byHabitat_permute.smk'
+include: 'rules/angsd_byCity_byHabitat_bootstrap.smk'
+include: 'rules/angsd_byCity_byPop.smk'
 include: 'rules/angsd_byCity.smk'
 include: 'rules/angsd_byCity_withoutRelated.smk'
 include: 'rules/LD.smk'
 include: 'rules/Relatedness.smk'
 include: 'rules/population_structure_withRelated.smk'
-#include: 'rules/population_structure_withoutRelated.smk'
+include: 'rules/population_structure_withoutRelated.smk'
+#include: 'rules/epos.smk'
 #include: 'rules/blueprints_stairwayplot2.smk'
 #include: 'rules/sfs_for_dadi.smk'
 #include: 'rules/dadi_demographic_models.smk'

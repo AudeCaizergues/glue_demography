@@ -18,15 +18,15 @@ rule angsd_permuted_saf_likelihood_byCity_byHabitat:
     input:
         unpack(get_files_for_permuted_saf_estimation)
     output:
-        saf = '{0}/sfs/by_city/{{city}}/randomized/{{city}}_{{habitat}}_{{site}}_seed{{seed}}.saf.gz'.format(ANGSD_DIR),
-        saf_idx = '{0}/sfs/by_city/{{city}}/randomized/{{city}}_{{habitat}}_{{site}}_seed{{seed}}.saf.idx'.format(ANGSD_DIR),
-        saf_pos = '{0}/sfs/by_city/{{city}}/randomized/{{city}}_{{habitat}}_{{site}}_seed{{seed}}.saf.pos.gz'.format(ANGSD_DIR)
+        saf = temp('{0}/sfs/by_city/{{city}}/randomized/{{city}}_{{habitat}}_{{site}}_seed{{seed}}.saf.gz'.format(ANGSD_DIR)),
+        saf_idx = temp('{0}/sfs/by_city/{{city}}/randomized/{{city}}_{{habitat}}_{{site}}_seed{{seed}}.saf.idx'.format(ANGSD_DIR)),
+        saf_pos = temp('{0}/sfs/by_city/{{city}}/randomized/{{city}}_{{habitat}}_{{site}}_seed{{seed}}.saf.pos.gz'.format(ANGSD_DIR))
     log: LOG_DIR + '/angsd_permuted_saf_likelihood_byCity_byHabitat/{city}_{habitat}_{site}_seed{seed}_saf.log'
     priority: 10
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     params:
         out = '{0}/sfs/by_city/{{city}}/randomized/{{city}}_{{habitat}}_{{site}}_seed{{seed}}'.format(ANGSD_DIR)
-    threads: 6
+    threads: 2
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 8000,
         time = '03:00:00'
@@ -82,7 +82,8 @@ rule angsd_estimate_permuted_sfs_byCity_byHabitat:
     """
     input:
         saf = rules.angsd_permuted_saf_likelihood_byCity_byHabitat.output.saf_idx,
-        sites = rules.convert_sites_for_angsd.output
+        sites = rules.convert_sites_for_angsd.output,
+        idx = rules.angsd_index_degenerate_sites.output
     output:
         '{0}/sfs/by_city/{{city}}/randomized/{{city}}_{{habitat}}_{{site}}_seed{{seed}}.sfs'.format(ANGSD_DIR)
     log: LOG_DIR + '/angsd_estimate_permuted_sfs_byCity_byHabitat/{city}_{habitat}_{site}_seed{seed}_sfs.log'

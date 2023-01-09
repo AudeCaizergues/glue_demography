@@ -88,6 +88,19 @@ def get_files_for_saf_estimation_byCity_byHabitat(wildcards):
     bams = expand(rules.create_bam_list_byCity_byHabitat_withoutRelated.output, city=wildcards.city, habitat=wildcards.habitat, site = wildcards.site, sample=FINAL_SAMPLES)
     return { 'bams' : bams, 'sites_idx' : sites_idx , 'sites' : sites, 'ref' : ref }
 
+def get_files_for_saf_estimation_byCity_byPop(wildcards):
+    """
+    Get files to estimate SAF likelihhods for urban and rural habitats by city.
+    """
+    sites_idx = expand(rules.angsd_index_degenerate_sites.output.idx, site=wildcards.site)
+    sites = expand(rules.convert_sites_for_angsd.output, site=wildcards.site)
+    ref = rules.unzip_reference.output
+    all_bams = expand(rules.create_bam_list_byCity_byPop.output, city_pop=wildcards.city_pop, site = wildcards.site, sample=FINAL_SAMPLES)
+    city_pop_name = wildcards.city_pop
+    bams = [x for x in all_bams if '{0}'.format(city_pop_name) in os.path.basename(x)]
+    return { 'bams' : bams, 'sites_idx' : sites_idx , 'sites' : sites, 'ref' : ref }
+
+
 def get_files_for_alleleFreq_estimation_byCity_byHabitat(wildcards):
     """
     Get files to estimate Allele Frequencies for urban and rural habitats by city.
@@ -105,6 +118,40 @@ def get_habitat_saf_files_byCity(wildcards):
     """
     city_saf_files = expand(rules.angsd_saf_likelihood_byCity_byHabitat.output.saf_idx, city=wildcards.city, habitat=HABITATS, site=wildcards.site)
     return city_saf_files
+    
+def get_habitat_saf_files_byCity_byPop(wildcards):
+    """
+    Returns list with 4fold SAF files by city by population
+    """
+    city_saf_files = expand(rules.angsd_saf_likelihood_byCity_byHabitat.output.saf_idx, city=wildcards.city, habitat=HABITATS, site=wildcards.site)
+    return city_saf_files
+    
+def get_city_population_saf_files(wildcards):
+    all_saf_files = expand(rules.angsd_saf_likelihood_byCity_byPop.output.saf_idx, city_pop=CITY_POP, site='4fold')
+    pop1 = wildcards.pop_combo.split('.')[0] + "_." + str(wildcards.pop_combo.split('.')[1])
+    pop2 = wildcards.pop_combo.split('.')[0] + "_." + str(wildcards.pop_combo.split('.')[2])
+    saf1 = [x for x in all_saf_files if '{0}'.format(pop1) in os.path.basename(x)]
+    saf2 = [x for x in all_saf_files if '{0}'.format(pop2) in os.path.basename(x)]
+    sites = expand(rules.convert_sites_for_angsd.output, site=wildcards.site)
+    return {'saf' : saf1 + saf2, 'sites' : sites}
+
+
+def get_city_population_saf_sfs_files(wildcards):
+    all_saf_files = expand(rules.angsd_saf_likelihood_byCity_byPop.output.saf_idx, city_pop=CITY_POP, site='4fold')
+    all_saf_gz_files = expand(rules.angsd_saf_likelihood_byCity_byPop.output.saf, city_pop=CITY_POP, site='4fold')
+    pop1 = wildcards.pop_combo.split('.')[0] + "_." + str(wildcards.pop_combo.split('.')[1]) + "."
+    pop2 = wildcards.pop_combo.split('.')[0] + "_." + str(wildcards.pop_combo.split('.')[2]) + "."
+    saf1 = [x for x in all_saf_files if '{0}'.format(pop1) in os.path.basename(x)]
+    saf2 = [x for x in all_saf_files if '{0}'.format(pop2) in os.path.basename(x)]
+    saf_gz1 = [x for x in all_saf_gz_files if '{0}'.format(pop1) in os.path.basename(x)] 
+    saf_gz2 = [x for x in all_saf_gz_files if '{0}'.format(pop2) in os.path.basename(x)] 
+    all_sfs_files = expand(rules.angsd_estimate_joint_sfs_byCity_byPop.output, pop_combo=wildcards.pop_combo, site='4fold')
+    combo = wildcards.pop_combo
+    sfs = [x for x in all_sfs_files if '{0}'.format(combo) in os.path.basename(x)]
+    sites = expand(rules.convert_sites_for_angsd.output, site=wildcards.site)
+    return {'saf' : saf1 + saf2, 'sfs' : sfs, 'sites' : sites, 'saf_gz1' : saf_gz1 , 'saf_gz2' : saf_gz2 }
+
+
 
 def get_urban_rural_bam_lists(wildcards):
     """
@@ -157,20 +204,6 @@ def get_bams_for_read_counts(wildcards):
     glue_bams = [bam for bam in glue_bams if not os.path.basename(bam).startswith('s_')]
     return tor_bams + glue_bams
 
-
-
-#def get_dadi_sfs_input_files(wildcards):
-#    hab1 = wildcards.hab_comb.split('_')[0]
-#    hab2 = wildcards.hab_comb.split('_')[1]
-#    saf_files = expand(rules.angsd_saf_likelihood_byHabitat.output.saf_idx, habitat=HABITATS, site='4fold')  
-#    sfs_files = expand(rules.angsd_estimate_sfs_byHabitat.output, habitat=HABITATS, site='4fold') 
-#    saf_urban = [x for x in saf_files if '{0}'.format(hab1) in os.path.basename(x)]
-#    saf_rural = [x for x in saf_files if '{0}'.format(hab2) in os.path.basename(x)]
-#    sfs_urban = [x for x in sfs_files if '{0}'.format(hab1) in os.path.basename(x)]
-#    sfs_rural = [x for x in sfs_files if '{0}'.format(hab2) in os.path.basename(x)]
-#    ref = rules.unzip_reference.output
-#    return { 'saf_urban' : saf_urban , 'saf_rural' : saf_rural, 'sfs_urban' : sfs_urban, 'sfs_rural' : sfs_rural, 'ref' : ref }
-
 def get_dadi_sfs_input_files(wildcards):
     hab1 = '_u_'
     hab2 = '_r_'
@@ -183,8 +216,3 @@ def get_dadi_sfs_input_files(wildcards):
     ref = rules.unzip_reference.output
     return { 'saf_urban' : saf_urban , 'saf_rural' : saf_rural, 'sfs_urban' : sfs_urban, 'sfs_rural' : sfs_rural, 'ref' : ref }
 
-#def get_sfs_to_format_for_dadi(wildcards):
-#     sfs = expand(rules.dadi_sfs.output)
-#     n_urb =
-#     n_rur =
-#     return 
