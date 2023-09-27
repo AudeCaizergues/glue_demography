@@ -128,8 +128,8 @@ def get_habitat_saf_files_byCity_byPop(wildcards):
     
 def get_city_population_saf_files(wildcards):
     all_saf_files = expand(rules.angsd_saf_likelihood_byCity_byPop.output.saf_idx, city_pop=CITY_POP, site='4fold')
-    pop1 = wildcards.pop_combo.split('.')[0] + "_." + str(wildcards.pop_combo.split('.')[1])
-    pop2 = wildcards.pop_combo.split('.')[0] + "_." + str(wildcards.pop_combo.split('.')[2])
+    pop1 = wildcards.pop_combo.split('.')[0] + "_." + str(wildcards.pop_combo.split('.')[1]) + "."
+    pop2 = wildcards.pop_combo.split('.')[0] + "_." + str(wildcards.pop_combo.split('.')[2]) + "."
     saf1 = [x for x in all_saf_files if '{0}'.format(pop1) in os.path.basename(x)]
     saf2 = [x for x in all_saf_files if '{0}'.format(pop2) in os.path.basename(x)]
     sites = expand(rules.convert_sites_for_angsd.output, site=wildcards.site)
@@ -179,6 +179,13 @@ def get_habitat_saf_files_byCity_permuted(wildcards):
     Returns list with 4fold urban and rural SAF files by city
     """
     city_saf_files = expand(rules.angsd_permuted_saf_likelihood_byCity_byHabitat.output.saf_idx, city=wildcards.city, habitat=HABITATS, site=wildcards.site, seed=wildcards.seed)
+    return city_saf_files
+    
+def get_habitat_saf_files_byCity_bootstrap(wildcards):
+    """
+    Returns list with 4fold urban and rural SAF files by city
+    """
+    city_saf_files = expand(rules.angsd_saf_likelihood_byCity_byHabitat.output.saf_idx, city=wildcards.city, habitat=HABITATS, site=wildcards.site)
     return city_saf_files
 
 def get_bamLists_toConcat(wildcards):

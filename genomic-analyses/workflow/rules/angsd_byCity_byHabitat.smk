@@ -201,10 +201,10 @@ rule angsd_byCity_byHabitat_done:
     """
     input:
         expand(rules.angsd_saf_likelihood_byCity_byHabitat.output, city=CITIES, habitat=HABITATS, site=['4fold']),
-        expand(rules.angsd_estimate_joint_sfs_byCity.output, city=CITIES, site=['4fold']),
-        expand(rules.angsd_estimate_sfs_byCity_byHabitat.output, city=CITIES, habitat=HABITATS, site=['4fold']),
-        expand(rules.angsd_fst_readable.output, city=CITIES, site=['4fold']),
-        expand(rules.angsd_diversity_neutrality_stats_byCity_byHabitat.output, city=CITIES, habitat=HABITATS, site=['4fold'])
+        #expand(rules.angsd_estimate_joint_sfs_byCity.output, city=CITIES, site=['4fold']),
+        #expand(rules.angsd_estimate_sfs_byCity_byHabitat.output, city=CITIES, habitat=HABITATS, site=['4fold']),
+        #expand(rules.angsd_fst_readable.output, city=CITIES, site=['4fold']),
+        #expand(rules.angsd_diversity_neutrality_stats_byCity_byHabitat.output, city=CITIES, habitat=HABITATS, site=['4fold'])
     output:
         '{0}/angsd_byCity_byHabitat.done'.format(ANGSD_DIR)
     shell:

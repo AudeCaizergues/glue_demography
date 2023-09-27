@@ -71,15 +71,10 @@ rule create_bam_list_finalSamples:
         import os
         import re
         import pandas as pd
-        from contextlib import redirect_stderr
-        with open(log[0], 'w') as stderr, redirect_stderr(stderr):
-            bad_samples = pd.read_table(input.highErr, header=None).iloc[:,0].tolist()
-            with open(output[0], 'w') as f:
+
+        with open(output[0], 'w') as f:
                 for bam in input.bams:
-                    search = re.search('^(.+)(?=_\w)', os.path.basename(bam))
-                    sample = search.group(1)
-                    if sample not in bad_samples:
-                        f.write('{0}\n'.format(bam))
+                      f.write('{0}\n'.format(bam))
 
 rule convert_sites_for_angsd:
     """

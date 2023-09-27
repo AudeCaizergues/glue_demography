@@ -151,8 +151,11 @@ rule angsd_byCity_byPop_done:
     for populations within cities
     """
     input:
+        expand(rules.angsd_saf_likelihood_byCity_byPop.output, city_pop=CITY_POP, site=['4fold']),
         expand(rules.angsd_estimate_joint_sfs_byCity_byPop.output, city_pop=CITY_POP, site=['4fold'], pop_combo=POP_COMBO),
-        expand(rules.angsd_fst_index_byCity_byPop.output, site=['4fold'], pop_combo=POP_COMBO)
+        expand(rules.angsd_fst_index_byCity_byPop.output, site=['4fold'], pop_combo=POP_COMBO),
+        expand(rules.angsd_fst_readable_byCity_byPop.output, site=['4fold'], pop_combo=POP_COMBO)
+
     output:
         '{0}/angsd_byCity_byPop.done'.format(ANGSD_DIR)
     shell:
