@@ -90,6 +90,32 @@ rule angsd_estimate_joint_sfs_byCity_byPop:
             -P {threads} > {output} 2> {log}
         """
 
+rule angsd_estimate_sfs_byCity_byPop:
+    """
+    Estimate folded SFS separately for each habitat in each city (i.e., 1D SFS) using realSFS. 
+    """
+    input:
+        saf = rules.angsd_saf_likelihood_byCity_byPop.output.saf_idx,
+        sites = rules.convert_sites_for_angsd.output,
+        idx = rules.angsd_index_degenerate_sites.output,
+    output:
+        '{0}/sfs/by_city/byPop/{{city_pop}}._{{site}}.sfs'.format(ANGSD_DIR)
+    log: LOG_DIR + '/angsd_estimate_sfs_byCity_byPop/{city_pop}_{site}.sfs.log'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    threads: 10
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 5000,
+        time = '03:00:00'
+    shell:
+        """
+        realSFS {input.saf} \
+            -sites {input.sites} \
+            -P {threads} \
+            -fold 1 \
+            -maxIter 2000 \
+            -seed 42 > {output} 2> {log}
+        """
+
 
 ##############
 #### FST  ####
@@ -140,6 +166,52 @@ rule angsd_fst_readable_byCity_byPop:
         realSFS fst print {input} > {output} 2> {log}
         """
 
+rule angsd_estimate_thetas_byCity_byPop:
+    """
+    Generate per-site thetas in each habitat for each city from 1DSFS
+    """
+    input:
+        saf_idx = rules.angsd_saf_likelihood_byCity_byPop.output.saf_idx,
+        sfs = rules.angsd_estimate_sfs_byCity_byPop.output,
+        sites = rules.convert_sites_for_angsd.output
+    output:
+        idx = '{0}/summary_stats/byPop/thetas/{{city_pop}}._{{site}}.thetas.idx'.format(ANGSD_DIR),
+        thet = '{0}/summary_stats/byPop/thetas/{{city_pop}}._{{site}}.thetas.gz'.format(ANGSD_DIR)
+    log: LOG_DIR + '/angsd_estimate_thetas_byCity_byHabitat/{city_pop}_{site}_thetas.log'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    threads: 4
+    params:
+        out = '{0}/summary_stats/byPop/thetas/{{city_pop}}._{{site}}'.format(ANGSD_DIR)
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 4000,
+        time = '01:00:00'
+    shell:
+        """
+        realSFS saf2theta {input.saf_idx} \
+            -sites {input.sites} \
+            -P {threads} \
+            -fold 1 \
+            -sfs {input.sfs} \
+            -outname {params.out} 2> {log}
+        """
+
+rule angsd_diversity_neutrality_stats_byCity_byPop:
+    """
+    Estimate pi, Waterson's theta, Tajima's D, etc. in each habitat in each city.
+    """
+    input:
+        rules.angsd_estimate_thetas_byCity_byPop.output.idx
+    output:
+       '{0}/summary_stats/byPop/thetas/{{city_pop}}._{{site}}.thetas.idx.pestPG'.format(ANGSD_DIR)
+    log: LOG_DIR + '/angsd_diversity_neutrality_stats_byCity_byPop/{city_pop}_{site}_diversity_neutrality.log'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 4000,
+        time = '01:00:00'
+    shell:
+        """
+        thetaStat do_stat {input} 2> {log}
+        """
 
 ##############
 #### POST ####
@@ -152,9 +224,10 @@ rule angsd_byCity_byPop_done:
     """
     input:
         expand(rules.angsd_saf_likelihood_byCity_byPop.output, city_pop=CITY_POP, site=['4fold']),
-        expand(rules.angsd_estimate_joint_sfs_byCity_byPop.output, city_pop=CITY_POP, site=['4fold'], pop_combo=POP_COMBO),
-        expand(rules.angsd_fst_index_byCity_byPop.output, site=['4fold'], pop_combo=POP_COMBO),
-        expand(rules.angsd_fst_readable_byCity_byPop.output, site=['4fold'], pop_combo=POP_COMBO)
+        #expand(rules.angsd_estimate_joint_sfs_byCity_byPop.output, city_pop=CITY_POP, site=['4fold'], pop_combo=POP_COMBO),
+        #expand(rules.angsd_fst_index_byCity_byPop.output, site=['4fold'], pop_combo=POP_COMBO),
+        #expand(rules.angsd_fst_readable_byCity_byPop.output, site=['4fold'], pop_combo=POP_COMBO),
+        expand(rules.angsd_diversity_neutrality_stats_byCity_byPop.output, site=['4fold'], city_pop=CITY_POP)
 
     output:
         '{0}/angsd_byCity_byPop.done'.format(ANGSD_DIR)
